@@ -1,0 +1,917 @@
+{
+  "name": "Gmail Monitor & Categorizer",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Receives instant push from Gmail. Copy this node's webhook URL into the Gmail Watch node in Workflow A.",
+        "height": 80,
+        "width": 360,
+        "color": 4
+      },
+      "id": "9ddf320e-70c2-41f5-b538-3bcf4753f48b",
+      "name": "Sticky Note - Gmail Trigger",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Fetches full email details: subject, from, date, snippet, body.",
+        "height": 80,
+        "width": 320,
+        "color": 4
+      },
+      "id": "3bf235a2-24ef-4831-bc33-3388f94b07d4",
+      "name": "Sticky Note - Get Message",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Routes Upwork job posts to dedicated path. All other emails go to the Switch categorizer.",
+        "height": 80,
+        "width": 360,
+        "color": 3
+      },
+      "id": "ace7d98b-f17b-4010-b9cf-2f3143786c35",
+      "name": "Sticky Note - IF Upwork",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-upwork-1",
+              "leftValue": "={{ $json.subject.toLowerCase().includes('upwork') || ($json.headers.from || '').toLowerCase().includes('upwork.com') || $json.subject.toLowerCase().includes('invitation to interview') }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "34585792-1733-45f5-957b-b7e61bc9f274",
+      "name": "IF: Is Upwork?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Label must be pre-created in Gmail before running.",
+        "height": 60,
+        "width": 280,
+        "color": 2
+      },
+      "id": "c1a1229d-aad6-4fbc-8eb4-0571017dff0b",
+      "name": "Sticky Note - Add Label Upwork",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Marks Upwork email as read automatically.",
+        "height": 60,
+        "width": 260,
+        "color": 2
+      },
+      "id": "9accdffd-dd94-48e1-83ca-69630cffddba",
+      "name": "Sticky Note - Mark Read Upwork",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "1323de60-f6f3-4f0c-a868-a2dc01581394",
+      "name": "Gmail: Mark as Read (Upwork)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        -464
+      ],
+      "webhookId": "868cbc3f-9d67-4cb8-abd3-e662db909398",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Extracts the Upwork job link from the email body using regex.",
+        "height": 60,
+        "width": 320,
+        "color": 2
+      },
+      "id": "8e345282-1c73-44f3-8f43-53466ddde7da",
+      "name": "Sticky Note - Extract Job URL",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.textPlain || $input.first().json.snippet || '';\nconst match = body.match(/https:\\/\\/www\\.upwork\\.com\\/jobs\\/[^\\s\"<>]+/);\nreturn [{ json: { ...$input.first().json, jobUrl: match ? match[0].replace(/&amp;/g, '&') : 'URL not found' } }];"
+      },
+      "id": "44811073-8604-4678-9604-5263bc1b064c",
+      "name": "Code: Extract Job URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -464
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Logs job to Google Sheet. Sheet must have headers: Date Received | Job Title | Preview | Job URL",
+        "height": 80,
+        "width": 380,
+        "color": 5
+      },
+      "id": "2670edbc-e5f5-4e04-a6b9-0cc536814a7a",
+      "name": "Sticky Note - Sheets",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1svwiIZOqGlLPA6vQJsv5yyd2Yme4ZeoVF6CuCFutsvE",
+          "mode": "list",
+          "cachedResultName": "Upwork Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1svwiIZOqGlLPA6vQJsv5yyd2Yme4ZeoVF6CuCFutsvE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Upwork Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1svwiIZOqGlLPA6vQJsv5yyd2Yme4ZeoVF6CuCFutsvE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date Received": "={{ $now.format('yyyy-MM-dd') }}",
+            "Preview": "={{ $('IF: Is Upwork?').item.json.headers.subject }}",
+            "Job URL": "={{ $('IF: Is Upwork?').item.json.text }}",
+            "Job Title": "={{ $('IF: Is Upwork?').item.json.subject }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date Received",
+              "displayName": "Date Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Preview",
+              "displayName": "Preview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job URL",
+              "displayName": "Job URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9037d554-6385-489b-b300-2609f400da73",
+      "name": "Google Sheets: Append Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1248,
+        -464
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Sends instant Telegram alert. Replace YOUR_CHAT_ID with your actual ID from @userinfobot.",
+        "height": 80,
+        "width": 360,
+        "color": 5
+      },
+      "id": "4dcada0f-5731-44b3-a310-7da17e0ca20a",
+      "name": "Sticky Note - Telegram",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "1527662988",
+        "text": "=ðŸ“¬ New Upwork Job Post!\n\nTitle: {{ $json.Preview }}\nDate: {{ $json['Date Received'] }}\nPreview: {{ $json.Preview }}\n\nLink: ",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "e2edc3ed-b16d-467c-be8f-219966355b1a",
+      "name": "Telegram: Send Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -464
+      ],
+      "webhookId": "4b1d216a-624a-4a4c-940f-7bbd17b23451",
+      "credentials": {
+        "telegramApi": {
+          "id": "SHjkbDuTVwysOXQB",
+          "name": "hussein_bots"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Categorizes all non-Upwork emails. First match wins. 'Personal' is the fallback.",
+        "height": 80,
+        "width": 380,
+        "color": 3
+      },
+      "id": "9077fe45-b19b-4b9e-b378-1776fc922a70",
+      "name": "Sticky Note - Switch",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Newsletter â€” Label must be pre-created in Gmail.",
+        "height": 60,
+        "width": 280
+      },
+      "id": "bfd783e8-aa87-4427-8117-3e702d7ad973",
+      "name": "Sticky Note - Newsletter Label",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Finance â€” Label must be pre-created in Gmail.",
+        "height": 60,
+        "width": 280
+      },
+      "id": "dca26ece-33d9-4fcc-ad86-bc723603375a",
+      "name": "Sticky Note - Finance Label",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Social â€” Label must be pre-created in Gmail.",
+        "height": 60,
+        "width": 280
+      },
+      "id": "1d556bdf-5551-4865-9187-6d8ac4663e10",
+      "name": "Sticky Note - Social Label",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Personal â€” Label must be pre-created in Gmail.",
+        "height": 60,
+        "width": 280
+      },
+      "id": "cdc523c9-0daa-4610-ad91-ace15b4eaa83",
+      "name": "Sticky Note - Personal Label",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_151775503485547009"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -464
+      ],
+      "id": "8bf7833c-b93c-4248-898f-b041e7525e6c",
+      "name": "Add Label Upwork-Jobs",
+      "webhookId": "63bcf924-5d00-42a4-909c-502b99a80a42",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -176
+      ],
+      "id": "9a0932ac-dfee-4d5c-bd32-2b64d570daad",
+      "name": "Get a message",
+      "webhookId": "d7b8da29-ffa9-46da-9e26-afc8f09dd227",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}\n{{ $json.From }}\n\nClassify the input text and sender and map to one of these four paths\n\n",
+        "categories": {
+          "categories": [
+            {
+              "category": "Newsletter",
+              "description": "Newsletter emails check the pattern and detect it"
+            },
+            {
+              "category": "Social",
+              "description": "emails from social platforms e.g., facebook etc."
+            },
+            {
+              "category": "Finance",
+              "description": "Emails related to reciepts, invoice etc."
+            },
+            {
+              "category": "Personal",
+              "description": "Email from a person domain and not company or no-reply, support, business or social mails"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        112
+      ],
+      "id": "b6f3ce68-ce8a-46c8-9118-993c18bd92d0",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        448,
+        464
+      ],
+      "id": "a3e696bb-af8e-4a66-b9e6-ca7f26d6bf1f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "9hjrdVSTcdHO0LDU",
+          "name": "Qurb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_181863722320304204"
+        ]
+      },
+      "id": "ef746777-dbed-4e72-98c1-38c6f717771f",
+      "name": "Add Label Newsletter",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        -112
+      ],
+      "webhookId": "8642ace9-b7cd-4ae5-875c-d2b833c93441",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_8425045504622125355"
+        ]
+      },
+      "id": "dc97c62e-ccfc-40d0-9bb8-5a48d63c50f1",
+      "name": "Add Label Finance",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        400
+      ],
+      "webhookId": "8642ace9-b7cd-4ae5-875c-d2b833c93441",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_2195513622692725468"
+        ]
+      },
+      "id": "c291c449-aa28-464d-8b26-683024cf608e",
+      "name": "Add Label Social",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        128
+      ],
+      "webhookId": "8642ace9-b7cd-4ae5-875c-d2b833c93441",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "a96ea687-43de-4b0a-9cc2-131cb8539c12",
+      "name": "Gmail: Mark as Read (social)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        128
+      ],
+      "webhookId": "868cbc3f-9d67-4cb8-abd3-e662db909398",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "fccb27dc-db24-4fb7-b7d3-093115453af3",
+      "name": "Mark as Read (Finance)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        400
+      ],
+      "webhookId": "868cbc3f-9d67-4cb8-abd3-e662db909398",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_4597037569303046502"
+        ]
+      },
+      "id": "63b9a9ad-5d5b-4b3d-903c-0807af1dbdf3",
+      "name": "Gmail: Add Label Personal",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        688
+      ],
+      "webhookId": "8642ace9-b7cd-4ae5-875c-d2b833c93441",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "60cf2d66-d272-4d74-a4b9-28063b604829",
+      "name": "Mark as Read (Personal)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        688
+      ],
+      "webhookId": "868cbc3f-9d67-4cb8-abd3-e662db909398",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "e2f52994-6ef7-49d9-bfe7-92af04d5b913",
+      "name": "Gmail: Mark as Read (Newsletter)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        -112
+      ],
+      "webhookId": "868cbc3f-9d67-4cb8-abd3-e662db909398",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -176
+      ],
+      "id": "3a9b301d-a378-4d05-add1-9bd09c60e021",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19c9421d7e1a2fd9",
+          "threadId": "19c9421d7e1a2fd9",
+          "snippet": "Hello Hussein Adebayo, Hi Hussein, Invite your friends to get their USD Card and earn $5 for every successful referral! You&#39;ll receive your bonus once they claim their card. Here&#39;s how it works",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 34759,
+          "historyId": "642672",
+          "internalDate": "1772011771000",
+          "labels": [
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "CATEGORY_UPDATES",
+              "name": "CATEGORY_UPDATES"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "From": "Chipper Cash <no-reply@chippercash.com>",
+          "Subject": "Hussein, earn $5 with USD Card referrals!",
+          "To": "hellohusseinadebayo@gmail.com"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "IF: Is Upwork?": {
+      "main": [
+        [
+          {
+            "node": "Add Label Upwork-Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail: Mark as Read (Upwork)": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract Job URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Extract Job URL": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Append Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets: Append Row": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label Upwork-Jobs": {
+      "main": [
+        [
+          {
+            "node": "Gmail: Mark as Read (Upwork)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "IF: Is Upwork?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Add Label Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Label Social",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Label Finance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail: Add Label Personal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Gmail: Mark as Read (Newsletter)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label Finance": {
+      "main": [
+        [
+          {
+            "node": "Mark as Read (Finance)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label Social": {
+      "main": [
+        [
+          {
+            "node": "Gmail: Mark as Read (social)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail: Add Label Personal": {
+      "main": [
+        [
+          {
+            "node": "Mark as Read (Personal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "46bd50de-9c6f-403d-a352-8c965ecae620",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "nEPQhyHohgSMFc3Kcswrk",
+  "tags": []
+}
