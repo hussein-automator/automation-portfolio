@@ -1,0 +1,11 @@
+# Ignore environment variables and secrets
+.env
+.env.local
+secrets.json
+
+# Ignore OS metadata
+.DS_Store
+Thumbs.db
+
+# Ignore n8n local backups (if you use them)
+*.sqlite
