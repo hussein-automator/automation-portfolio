@@ -1,0 +1,637 @@
+{
+  "name": "Bubble AI Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bubble-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1936,
+        1232
+      ],
+      "id": "55b58603-2d6a-44ef-8ae3-a5c7f79d85a1",
+      "name": "Webhook",
+      "webhookId": "7458b73a-72a1-4c3d-bfa7-308849cbeb8b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://robyn-88241.bubbleapps.io/version-test/api/1.1/wf/save_ai_message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED***"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "role",
+              "value": "assistant"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('existing_conversation').first().json.output }}"
+            },
+            {
+              "name": "conversation_id",
+              "value": "={{ $('Webhook').first().json.body.session_id }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "slug",
+              "value": "test123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        816,
+        1744
+      ],
+      "id": "5eab8828-9446-48da-8e3b-4167a7186d0f",
+      "name": "Node #5: HTTP Request (Save AI Response To Bubble)"
+    },
+    {
+      "parameters": {
+        "url": "https://robyn-88241.bubbleapps.io/version-test/api/1.1/obj/Message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "constraints",
+              "value": "=[{\"key\":\"conversation_id\",\"constraint_type\":\"equals\",\"value\":\"{{ $json.body.session_id }}\"}]"
+            },
+            {
+              "name": "sort_field",
+              "value": "timestamp"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED***"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1504,
+        1232
+      ],
+      "id": "390585e3-0477-4451-ae57-fb8eb5415411",
+      "name": "Node #2: HTTP Request (Fetch Messages)"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('user_latest - Input?').item.json.session_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1424,
+        1968
+      ],
+      "id": "0c6763f4-bf10-49d0-9f82-9aaa191b949c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "18beee6d-7ef7-48da-8c7d-a7be9b21c66f",
+              "leftValue": "={{ $json.response.count }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1008,
+        1232
+      ],
+      "id": "5f5155f0-f773-4bce-a754-7f8e444a94ca",
+      "name": "message_count == 1?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.first().json.response.results;\n\nconst messages = results\n  .filter(msg => msg.Content)\n  .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))\n  .map(msg => ({ role: msg.role, content: msg.Content.trim() }));\n\n// Get conversation_id from first message (all should have same conversation_id)\nconst sessionId = results[0]?.conversation_id || '';\n\nreturn [{\n  json: {\n    systemInstructions: \"Your instructions...\",\n    conversation: messages.slice(-6),  // Last 6 messages\n    session_id: sessionId  // Renamed variable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        1744
+      ],
+      "id": "c18b0cd9-81c8-4ff6-be06-ff53ac145af6",
+      "name": "user_latest - Input?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6a249b01-b72d-4770-bb91-6191aa97fabb",
+              "name": "body.system_instructions",
+              "value": "={{ $('Webhook').item.json.body.system_instructions }}",
+              "type": "string"
+            },
+            {
+              "id": "886e05d3-0961-4dde-b509-d1cdd0e8cb5c",
+              "name": "body.session_id",
+              "value": "={{ $('Webhook').item.json.body.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        672
+      ],
+      "id": "227b772b-8180-471e-8806-d21c9772c6a3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        1216
+      ],
+      "id": "ff39571a-5962-4520-96d4-1f10b297d2ce",
+      "name": "LLM"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('message_count == 1?').item.json.response.results[0].Content }}",
+        "options": {
+          "systemMessage": "={{ $('Webhook').item.json.body.system_instructions }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        96,
+        672
+      ],
+      "id": "15c08f2e-5646-4f4a-8308-fa9e284381fb",
+      "name": "new_conversation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**Message_History**: {{ JSON.stringify($('user_latest - Input?').first().json.conversation) }}\n\n## NOTE: The last message in the ARRAY is the latest message, if the role is 'assistant' for last message DO NOT proceed\n\nYou are NOT starting a conversation but rather continuing it!",
+        "options": {
+          "systemMessage": "={{ $('Webhook').item.json.body.system_instructions }}\n\nUnderstand intent and don't limit your response to the system prompt, people can answer names like John Doe, without using my name is ...\n\nBe aware of USER intent based on the icoming text!\n\n## NOTE\n - DO NOT use em-dashes, or over use of punctuations use comma, period and excalamation where necessary in your response! NO -- DASHES!\n - DO NOT include MARKDOWNS in your response e.g., ****, -, #,... JUST plain text to be sent back to the USER!\n - BE PROACTIVE with your RESPONSES, they looks like a templated TEXTS."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        80,
+        1744
+      ],
+      "id": "51057930-0367-4c61-bb2a-d8485b58788e",
+      "name": "existing_conversation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://robyn-88241.bubbleapps.io/version-test/api/1.1/wf/save_ai_message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED***"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "role",
+              "value": "assistant"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('new_conversation').first().json.output }}"
+            },
+            {
+              "name": "conversation_id",
+              "value": "={{ $('Webhook').first().json.body.session_id }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "slug",
+              "value": "test123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        816,
+        672
+      ],
+      "id": "ad1ec3ff-ffdc-4138-a4d7-bff46bb05501",
+      "name": "Node #5: HTTP Request (Save AI Response To Bubble)1"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('existing_conversation').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1376,
+        1744
+      ],
+      "id": "927177ab-c31e-42b1-8710-08456a443394",
+      "name": "continued_chat"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('new_conversation').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1376,
+        672
+      ],
+      "id": "24ee2a1b-7313-4b74-951b-abe76b34263e",
+      "name": "new_chat"
+    },
+    {
+      "parameters": {
+        "content": "## Node #1: Webhook – Bubble Chat Entry Point\n🌐 Webhook – Bubble Chat Trigger\n\n**This node receives incoming chat messages from the Bubble application.\nIn simple words:\n\n- Listens for POST requests at the /bubble-chat endpoint\n- Receives user chat messages including session ID, user input, and system instructions\n- Acts as the secure entry point that triggers the entire conversation workflow\n- Captures all necessary data (session ID, content, system instructions) to process the chat interaction**\n\n### 👉 In short:\n**This node catches incoming chat requests from Bubble and starts the AI conversation processing workflow.**",
+        "height": 480,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        1056
+      ],
+      "id": "9f4d0bd2-ba2b-4144-b761-f7bd3f5d4d07",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Node #2: HTTP Request (Fetch Messages) – Retrieve Conversation History\n📥 HTTP Request – Fetch Conversation History\n\n**This node retrieves the complete message history for the current conversation session.\nIn simple words:\n\n- Sends a GET request to Bubble's Message API with the session ID\n- Fetches all previous messages in chronological order (sorted by timestamp)\n- Uses Bearer token authentication for secure access\n- Returns the full conversation context needed for the AI to maintain continuity**\n\n### 👉 In short:\n**This node pulls the entire conversation history from Bubble so the AI knows what has been discussed already.**",
+        "height": 480,
+        "width": 448,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        656
+      ],
+      "id": "2158b8a6-14bc-495d-9eed-7b6a2e42a1dc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Node #3: If – Message Count Check (message_count == 1?)\n🔍 If – New vs Existing Conversation Router\n\n**This node determines whether this is a brand new conversation or a continuation of an existing one.\nIn simple words:\n\n- Checks if the message count equals exactly 1 (meaning first message)\n- Routes to \"new conversation\" path if this is the user's first message\n- Routes to \"existing conversation\" path if there are already multiple messages\n- This decision controls which AI agent and system prompt will be used**\n\n### 👉 In short:\n**This node acts as a traffic controller, sending new conversations one way and ongoing conversations another way.**",
+        "height": 496,
+        "width": 448,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        1392
+      ],
+      "id": "0769715c-33fc-4bdf-95e2-014702354307",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Node #4: Edit Fields – Prepare New Conversation Data\n✏️ Edit Fields – Extract Session Variables\n\n**This node prepares the essential session data for a brand new conversation.\nIn simple words:\n\n- Extracts the system instructions from the webhook payload\n- Captures the session ID for conversation tracking\n- Formats this data cleanly for the new conversation AI agent\n- Ensures the AI starts with the correct foundational instructions**\n\n### 👉 In short:\n**This node pulls out the session ID and system instructions needed to start a fresh AI conversation properly.**",
+        "height": 448,
+        "width": 448,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        192
+      ],
+      "id": "1ee2f1bb-7410-4447-bcbe-430c7bdc87c7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Node #8: Agent – New Conversation Handler (new_conversation)\n🚀 Agent – First Message AI Handler\n\n**This node handles the very first interaction in a new conversation session.\nIn simple words:\n\n- Receives the user's initial message and system instructions\n- Uses the system instructions provided in the webhook to set the AI's role and behavior\n- Generates the opening AI response that starts the conversation journey\n- Does not use conversation memory since this is the first interaction**\n\n### 👉 In short:\n**This node creates the AI's first response when starting a brand new conversation with custom instructions.**",
+        "height": 496,
+        "width": 448,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        112
+      ],
+      "id": "fbc8fc69-d700-4fd0-9302-dd495d01c4ad",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Node #9: Agent – Existing Conversation Handler (existing_conversation)\n💬 Agent – Ongoing Conversation AI Handler\n\n**This node manages all follow-up messages in an active conversation.\nIn simple words:\n\n- Processes user messages after the initial greeting\n- Uses detailed coaching instructions specific to the Core 1 – North Star Blueprint process\n- Maintains conversation flow using the Simple Memory buffer\n- Guides users through structured sections (3.1 through 3.7) in the CoCreation Engine**\n\n### 👉 In short:\n**This node handles all ongoing conversation turns with specialized coaching instructions and conversation memory.**",
+        "height": 528,
+        "width": 448,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        1136
+      ],
+      "id": "7ad95d48-3dc2-4d9e-93ca-d5270b0576ed",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Node #10: HTTP Request (Save AI Response To Bubble) – Store New Conversation Response\n📤 HTTP Request – Save First AI Message\n\n**This node saves the AI's first response back to Bubble for new conversations.\nIn simple words:\n\n- Sends a POST request to Bubble's save message workflow\n- Includes the AI's response, session ID, timestamp, and role (assistant)\n- Uses Bearer token for secure authentication\n- Stores the opening message in the conversation history**\n\n### 👉 In short:\n**This node saves the AI's first reply to the Bubble database for new conversations.**",
+        "height": 528,
+        "width": 448,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        112
+      ],
+      "id": "2a22fe99-9975-4c75-b427-99408b027d37",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Node #11/#12: Respond To Webhook – New Chat Response (new_chat)/Existing Chat\n📨 Respond To Webhook – Return AI Response\n\n**These nodes sends the AI's opening message back to the Bubble interface for new conversations.\nIn simple words:\n\n- Returns the AI-generated response as plain text to the webhook caller\n- Delivers the assistant message in the conversation to the user's chat interface\n- Completes the webhook request-response cycle\n- Ensures the user sees the AI's responses immediately**\n\n### 👉 In short:\n**This node sends the AI's message back to Bubble so the user sees the response in their chat.**",
+        "height": 1888,
+        "width": 448,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        112
+      ],
+      "id": "2c831d7e-e1c8-46ea-b581-d1954d3a5ed9",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Node #5: Code – User Latest Input Processor (user_latest - Input?)\n🧠 Code – Parse Latest User Message\n\n**This node intelligently extracts and formats the user's most recent input from the conversation history.\nIn simple words:\n\n- Scans through all messages to find the latest user input\n- Determines if this is a new conversation (1 or fewer user messages)\n- Extracts session ID, user input, and system instructions\n- Calculates conversation state (new vs existing) for routing decisions**\n\n### 👉 In short:\n**This node figures out what the user just said and whether this is a new or continuing conversation.**",
+        "height": 496,
+        "width": 448,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        1168
+      ],
+      "id": "aefd61c4-3757-41ec-8b61-05f04691a28c",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Node #7: Simple Memory – Conversation Context Window\n💾 Simple Memory – Conversation History Buffer\n\n**This node maintains short-term memory for ongoing conversations.\nIn simple words:\n\n- Stores the last 10 messages in the conversation window\n- Uses the session ID as the unique identifier for each conversation\n- Provides context to the AI so responses stay relevant and coherent\n- Automatically manages memory limits to optimize performance**\n\n### 👉 In short:\n**This node remembers the recent conversation history so the AI doesn't repeat itself or lose context.**",
+        "height": 544,
+        "width": 448,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        1680
+      ],
+      "id": "5fbbacee-a3c8-4be7-9ed9-e5acc5349540",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Node #2: HTTP Request (Fetch Messages)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Node #5: HTTP Request (Save AI Response To Bubble)": {
+      "main": [
+        [
+          {
+            "node": "continued_chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Node #2: HTTP Request (Fetch Messages)": {
+      "main": [
+        [
+          {
+            "node": "message_count == 1?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "existing_conversation",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "message_count == 1?": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "user_latest - Input?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "user_latest - Input?": {
+      "main": [
+        [
+          {
+            "node": "existing_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "new_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "existing_conversation",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "new_conversation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "new_conversation": {
+      "main": [
+        [
+          {
+            "node": "Node #5: HTTP Request (Save AI Response To Bubble)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "existing_conversation": {
+      "main": [
+        [
+          {
+            "node": "Node #5: HTTP Request (Save AI Response To Bubble)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Node #5: HTTP Request (Save AI Response To Bubble)1": {
+      "main": [
+        [
+          {
+            "node": "new_chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "771612ab-bc91-4e34-8088-ab9d73cd915e",
+  "meta": {
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "eQQb0A7Wbk96rNAO",
+  "tags": []
+}
