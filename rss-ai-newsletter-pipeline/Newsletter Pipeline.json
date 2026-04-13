@@ -1,0 +1,746 @@
+{
+  "name": "The Signal — Newsletter Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📋 WORKFLOW: The Signal — Newsletter Pipeline\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWHAT IT DOES\nAutomatically generates a weekly B2B supply chain intelligence newsletter (\"The Signal\") every Monday morning. Pulls from 6 live RSS sources, passes the aggregated news to Claude for analysis and writing, then saves the finished issue to Google Docs and pings Telegram so you can review and paste into Substack.\n\nTRIGGER\nSchedule — Every Monday at 6:00 AM UTC\nAlso has Manual Test trigger for on-demand runs.\n\nFLOW\n1. Fetch RSS Feeds — pulls up to 5 items from 6 sources (FreightWaves, Supply Chain Dive, JOC, FMCSA, Container xChange, Trade Ready). Failed feeds are skipped gracefully.\n2. Format for Claude — strips failed feeds, formats headlines + summaries into a structured prompt input\n3. Claude: Write Newsletter — calls Anthropic API (claude-sonnet-4-6) to generate the full 800-1000 word issue\n4. Extract Newsletter Content — parses the API response, sets doc title with issue number + date\n5. Create Google Doc — creates a new titled Google Doc for this issue\n6. Write Newsletter to Doc — inserts the full newsletter text into the doc\n7. Telegram: Issue Ready — sends a notification with the Google Doc link\n\nSERVICES & AUTH\n- Anthropic API: API Key via httpHeaderAuth credential\n- Google Docs: OAuth2\n- Telegram: Bot token via n8n Credential\n\nERROR HANDLING\n- continueOnFail on: Claude API, Google Docs (create + write), Telegram\n- Global error handler: 🚨 Global Error Handler\n- Notifications sent to: owner Telegram\n\nSECURITY NOTES\n- No PII processed — public news data only\n- Do not log full Claude API responses (cost + size)\n- Anthropic API cost per run: ~$0.01–0.05\n\nLAST UPDATED: 2026-03-25\nBUILT BY: Claude (n8n-document skill)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "height": 968,
+        "width": 560,
+        "color": 7
+      },
+      "id": "sticky-doc",
+      "name": "📋 Workflow Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\n\nconst date = new Date().toLocaleDateString('en-US', {\n  month: 'long', day: 'numeric', year: 'numeric'\n});\nconst issueNumber = 1;\n\nconst cleanText = (text) => {\n  if (!text) return '';\n  return text\n    .replace(/<[^>]*>/g, '')\n    .replace(/\\s\\s+/g, ' ')\n    .trim();\n};\n\n// Separate error items from good items\nconst goodItems = allItems.filter(item => {\n  const title = item.json.title || '';\n  return !title.startsWith('[Feed error');\n});\n\nconst failedFeeds = allItems\n  .filter(item => (item.json.title || '').startsWith('[Feed error'))\n  .map(item => item.json.feedUrl || item.json.source || 'unknown');\n\n// Filter to last 8 days only\nconst eightDaysAgo = new Date();\neightDaysAgo.setDate(eightDaysAgo.getDate() - 8);\n\nconst recentItems = goodItems.filter(item => {\n  const pub = item.json.pubDate ? new Date(item.json.pubDate) : null;\n  if (!pub || isNaN(pub.getTime())) return false;\n  return pub >= eightDaysAgo;\n});\n\n// Guard: bail out if nothing recent\nif (recentItems.length === 0) {\n  throw new Error(\n    `No recent articles found (last 8 days). Failed feeds: ${failedFeeds.join(', ') || 'none'}. ` +\n    `Total items fetched: ${allItems.length}. Oldest item checked: ` +\n    `${goodItems[0]?.json?.pubDate || 'unknown'}`\n  );\n}\n\nconst newsText = recentItems\n  .map(item => {\n    const j = item.json;\n    const source = j.source || j.creator || 'Supply Chain News';\n    const rawSummary = j['content:encodedSnippet'] || j.contentSnippet || j.description || 'No summary available.';\n    const summary = cleanText(rawSummary);\n\n    return `[${source}]${j.pubDate ? ' ' + j.pubDate : ''}\\nHEADLINE: ${j.title || 'No title'}\\nSUMMARY: ${summary}\\n${j.link ? 'URL: ' + j.link : ''}`;\n  })\n  .join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    newsText,\n    date,\n    issueNumber,\n    itemCount: recentItems.length,\n    totalFetched: goodItems.length,\n    filteredOut: goodItems.length - recentItems.length,\n    failedFeeds\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        112
+      ],
+      "id": "code-format",
+      "name": "Format for Claude"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the raw text directly from the input\nconst response = $input.first().json.output[0].content[0].text;\n\n// 2. Get the metadata from your formatting node\nconst { date, issueNumber } = $('Format for Claude').first().json;\n\n// 3. Logic to handle the text\nconst newsletterText = response || 'ERROR: No content returned from Claude API.';\n\n// Clean the text: Removes Bold, Italics, Headings, and normalizes Bullets\nconst cleanText = newsletterText\n  .replace(/\\*\\*\\*/g, '')      // remove bold-italic ***\n  .replace(/\\*\\*/g, '')       // remove bold **\n  .replace(/\\*/g, '')         // remove italic *\n  .replace(/^#+\\s+/gm, '')     // remove # headings (requires space after #)\n  .replace(/^[-*•]\\s+/gm, '• ') // normalize bullets to a consistent style\n  .replace(/`+/g, '')         // remove code backticks\n  .trim();\n\n// 4. Create the title\nconst docTitle = `The Signal — Issue #${issueNumber} — ${date}`;\n\n// 5. Return the data\nreturn [{ \n  json: { \n    rawText: newsletterText, // Original Markdown preserved\n    cleanText,               // The stripped version\n    docTitle, \n    issueNumber, \n    date \n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        480
+      ],
+      "id": "code-extract",
+      "name": "Extract Newsletter Content"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 3,
+              "triggerAtHour": 10,
+              "triggerAtMinute": 55
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1488,
+        112
+      ],
+      "id": "70b96e17-c49c-43e3-9951-e8677d84704b",
+      "name": "6 am"
+    },
+    {
+      "parameters": {
+        "url": "https://www.tradeready.ca/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        400
+      ],
+      "id": "f293ac02-32bb-40fd-8f7a-fec0904acde2",
+      "name": "trade_ready",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "url": "https://www.joc.com/api/rssfeed/24517",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        208
+      ],
+      "id": "5382d02d-363c-4b8e-83e7-65c5db72653c",
+      "name": "journal_of commerce"
+    },
+    {
+      "parameters": {
+        "url": "https://www.supplychaindive.com/feeds/news/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        16
+      ],
+      "id": "b7a410f0-a783-4976-8eb2-ae8e2c7e9f7a",
+      "name": "supplychain"
+    },
+    {
+      "parameters": {
+        "url": "https://www.freightwaves.com/news/feed",
+        "options": {
+          "customFields": "={{ $now }}"
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        -176
+      ],
+      "id": "88fab2a1-7bed-41b3-89e4-c9f9abac7834",
+      "name": "freightwaves"
+    },
+    {
+      "parameters": {
+        "model": "minimax/minimax-m2.5:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        784
+      ],
+      "id": "73b242ff-4944-49e7-b684-9532cb9d2f5b",
+      "name": "LLM",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LQ1ssDqb9NHGDxN2",
+          "name": "hussein"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -816,
+        80
+      ],
+      "id": "51d3c1a9-1dd1-43de-9424-e8c119f6149d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fiveDaysAgo = new Date();\nfiveDaysAgo.setDate(fiveDaysAgo.getDate() - 2);\n\nreturn $input.all().filter(item => {\n  const pub = item.json.pubDate ? new Date(item.json.pubDate) : null;\n  if (!pub || isNaN(pub.getTime())) return false;\n  return pub >= fiveDaysAgo;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -176
+      ],
+      "id": "e5463f1f-e298-44f6-b2e5-c1a8754724cd",
+      "name": "date_filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const eightDaysAgo = new Date();\neightDaysAgo.setDate(eightDaysAgo.getDate() - 2);\n\nreturn $input.all().filter(item => {\n  const pub = item.json.pubDate ? new Date(item.json.pubDate) : null;\n  if (!pub || isNaN(pub.getTime())) return false;\n  return pub >= eightDaysAgo;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        16
+      ],
+      "id": "de18ab07-356a-46ca-be74-bc19fdb351cf",
+      "name": "date_Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const eightDaysAgo = new Date();\neightDaysAgo.setDate(eightDaysAgo.getDate() - 2);\n\nreturn $input.all().filter(item => {\n  const pub = item.json.pubDate ? new Date(item.json.pubDate) : null;\n  if (!pub || isNaN(pub.getTime())) return false;\n  return pub >= eightDaysAgo;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        208
+      ],
+      "id": "241c199b-e0f6-4698-bc21-7f0c318b8555",
+      "name": "Date_filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const eightDaysAgo = new Date();\neightDaysAgo.setDate(eightDaysAgo.getDate() - 5);\n\nreturn $input.all().filter(item => {\n  const pub = item.json.pubDate ? new Date(item.json.pubDate) : null;\n  if (!pub || isNaN(pub.getTime())) return false;\n  return pub >= eightDaysAgo;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        400
+      ],
+      "id": "567f3f75-1540-4603-a92a-0430bebe9033",
+      "name": "dAte_filter"
+    },
+    {
+      "parameters": {
+        "chatId": "1527662988",
+        "text": "=📦 *The Signal* — Issue #{{ $('Extract Newsletter Content').first().json.issueNumber }} is ready!\\n\\n*Week of:* {{ $('Extract Newsletter Content').first().json.date }}\\n\\n📄 [Open Google Doc](https://docs.google.com/document/d/{{ $('Create Doc').item.json.id }}/edit)\\n\\n→ Review → Copy to Substack → Publish",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        336
+      ],
+      "id": "telegram-notify",
+      "name": "send - Issue Ready",
+      "webhookId": "df95503f-c5aa-48fd-b440-367580c43380",
+      "credentials": {
+        "telegramApi": {
+          "id": "SHjkbDuTVwysOXQB",
+          "name": "hussein_bots"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('Extract Newsletter Content').item.json.cleanText }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "gdocs-write",
+      "name": "Write Newsletter",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "jmpBFNzBvctarnnQ",
+          "name": "hol-Docs"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "folderId": "1B1OHgf74nhvU_bVgR3KOsOgLXokv6mIg",
+        "title": "={{ $json.docTitle }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        336
+      ],
+      "id": "gdocs-create",
+      "name": "Create Doc",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "jmpBFNzBvctarnnQ",
+          "name": "hol-Docs"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=<role>\nYou are a senior Supply Chain Intelligence Analyst and Editor at a premium briefing service. You write \"The Signal\" — a weekly intelligence brief that busy operations managers and logistics directors pay to read because it tells them what to do, not just what happened.\n</role>\n\n<context>\nReaders are mid-to-senior supply chain professionals: ops managers, logistics directors, procurement leads, freight brokers. They are time-poor, data-driven, and allergic to fluff. They need to walk away knowing what moved this week, why it matters to their operation, and what to watch next. This is a Bloomberg brief, not a LinkedIn post.\n</context>\n\n<instructions>\n\n## Tone\n- Professional, direct, confident\n- No filler phrases: never use \"in today's fast-paced world\", \"game-changer\", \"it's important to note\", \"excited to share\"\n- Every sentence must earn its place\n- Analyze, don't summarize — tell the reader what it means for their costs, risk, or operations\n\n## Length\n- Total: 1,200–1,500 words\n- Each section must be substantive — no placeholder sentences\n- If the data supports deeper analysis, go deeper\n\n## Structure\nWrite exactly this structure, in this order:\n\nTHE SIGNAL | Week of {{ $json.date }}\n\n**THIS WEEK IN 60 SECONDS**\n\n- [Development 1 — 1 headline sentence + 1 sentence on why it matters operationally]\n- [Development 2 — 1 headline sentence + 1 sentence on why it matters operationally]\n- [Development 3 — 1 headline sentence + 1 sentence on why it matters operationally]\n\n**DEEP DIVE: [Most important story headline]**\n\n[250–300 words. Cover: what happened, the upstream/downstream cause, what it means for freight costs/lead times/sourcing, and one concrete action ops managers should take this week.]\n\n**2 MORE THINGS YOU NEED TO KNOW**\n\n**[Story 1 headline]**\n[4–5 sentences: what happened, who is affected, what the operational or cost implication is, what to monitor.]\n\n**[Story 2 headline]**\n[4–5 sentences: what happened, who is affected, what the operational or cost implication is, what to monitor.]\n\n**REGULATORY WATCH**\n\n[Specific regulation or policy change: name it, state the deadline, state the fine or consequence, state who is affected and what they must do. If there is nothing regulatory in the data, write: \"No major regulatory changes this week.\" — do not omit the section.]\n\n**TOOL SPOTLIGHT**\n\n[Name the tool. State the problem it solves in one sentence. Give one concrete example of how a supply chain team would use it this week. 3–4 sentences total.]\n\n**THE NUMBER**\n\n[Bold the number. One sentence on what it measures. One sentence on why it is moving. One sentence on what to watch.]\n\n\n</instructions>\n\n<input_data>\nnews: {{ $json.newsText }}\n</input_data>"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1168,
+        1984
+      ],
+      "id": "438e420c-8578-4dc5-af0e-997b41170f40",
+      "name": "Supply Chain Analyst",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "F8eiDP1Tc2uoLK4o",
+          "name": "embeddings"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below is this week's supply chain newsletter. Generate Reddit posts for the following 5 subreddits:\n\nr/supplychain\nr/logistics\nr/FreightBrokers\nr/supplyChainManagement\nr/Entrepreneur\nFor each subreddit:\n\nWrite a title that leads with the most relevant story for that community — no clickbait, no generic titles\nWrite a body (3–5 sentences max) that pulls the angle most useful to that subreddit's audience — do not summarize everything, pick one or two hooks\nAdd this disclaimer at the very top: \"I run a free supply chain newsletter — sharing this week's issue here in case it's useful to the community. No paid tier, no agenda.\"\nEnd with: Full issue here: [SUBSTACK_LINK]\nRules:\n\nEach post must feel written for that specific community — not copy-pasted\nNo phrases like \"dive in\", \"game-changer\", \"don't miss\", or \"check it out\"\nDo not mention the newsletter name more than once per post\nTitles must be specific — include real figures, company names, or policy names where available\nIf the newsletter has no angle relevant to a subreddit, say so instead of forcing a bad post\n\nNewsletter content:\n{{ $json.cleanText }}",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=You are a supply chain industry insider writing honest, value-first Reddit posts. You do not hype, sell, or fluff. You write like a practitioner sharing useful intel with peers, not like a marketer promoting a newsletter."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -528,
+        624
+      ],
+      "id": "1b146b54-5231-444e-9b57-f1c48c47e4f0",
+      "name": "reddit posts"
+    },
+    {
+      "parameters": {
+        "chatId": "1527662988",
+        "text": "=📦 *The Signal* — Issue #{{ $('Extract Newsletter Content').first().json.issueNumber }} is ready!\\n\\n*Week of:* {{ $('Extract Newsletter Content').first().json.date }}\\n\\n📄 [Open Google Doc](https://docs.google.com/document/d/{{ $('reddit Doc').item.json.id }}/edit)\\n\\n→ Review → Copy to Substack → Publish",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        624
+      ],
+      "id": "4f83d101-dccf-44e3-a3d3-57432b42ebce",
+      "name": "send - reddit post",
+      "webhookId": "df95503f-c5aa-48fd-b440-367580c43380",
+      "credentials": {
+        "telegramApi": {
+          "id": "SHjkbDuTVwysOXQB",
+          "name": "hussein_bots"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('clean').item.json.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 1,
+      "position": [
+        272,
+        624
+      ],
+      "id": "4db0fd93-2eab-4324-a5b7-cf0edb5c2058",
+      "name": "Write r/posts",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "jmpBFNzBvctarnnQ",
+          "name": "hol-Docs"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "folderId": "11cRzjfpr9ulB9Dwt7-Ja1zUWhJUvsBis",
+        "title": "={{ $json.channel }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 1,
+      "position": [
+        48,
+        624
+      ],
+      "id": "380ce4bf-2803-4a24-90e3-53cd3b1ebf62",
+      "name": "reddit Doc",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "jmpBFNzBvctarnnQ",
+          "name": "hol-Docs"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n provides the input data in the 'items' variable\nconst inputData = items[0].json.text; \n\n// 1. Split by the subreddit pattern using a lookahead\nconst sections = inputData.split(/(?=\\*\\*r\\/)/g);\n\n// 2. Map and format for n8n's expected output: [{ json: { ... } }]\nreturn sections\n  .map(section => {\n    const trimmed = section.trim();\n    if (!trimmed) return null;\n\n    // Extract the subreddit name\n    const nameMatch = trimmed.match(/^\\*\\*(r\\/.*?)\\*\\*/);\n    const channelName = nameMatch ? nameMatch[1] : \"unknown\";\n\n    // Clean the body text\n    const body = trimmed.replace(/^\\*\\*r\\/.*?\\*\\*/, \"\").trim();\n\n    // IMPORTANT: n8n requires each item to be wrapped in a 'json' object\n    return {\n      json: {\n        channel: channelName,\n        content: body\n      }\n    };\n  })\n  .filter(item => item !== null);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        624
+      ],
+      "id": "1c6ba7d2-e603-4b65-b879-da4fed9ed365",
+      "name": "clean"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-2024-11-20",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-2024-11-20"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=<role>\nYou are a senior Supply Chain Intelligence Analyst and Editor at a premium briefing service. You write \"The Signal\" — a weekly intelligence brief that busy operations managers and logistics directors pay to read because it tells them what to do, not just what happened.\n</role>\n\n<context>\nReaders are mid-to-senior supply chain professionals: ops managers, logistics directors, procurement leads, freight brokers. They are time-poor, data-driven, and allergic to fluff. They need to walk away knowing what moved this week, why it matters to their operation, and what to watch next. This is a Bloomberg brief, not a LinkedIn post.\n</context>\n\n<instructions>\n\n## Tone\n- Professional, direct, confident\n- No filler phrases: never use \"in today's fast-paced world\", \"game-changer\", \"it's important to note\", \"excited to share\"\n- Every sentence must earn its place\n- Analyze, don't summarize — tell the reader what it means for their costs, risk, or operations\n\n## Length\n- Total: 1,200–1,500 words\n- Each section must be substantive — no placeholder sentences\n- If the data supports deeper analysis, go deeper\n\n## Structure\nWrite exactly this structure, in this order:\n\nTHE SIGNAL | Week of {{ $json.date }}\n\n**THIS WEEK IN 60 SECONDS**\n\n- [Development 1 — 1 headline sentence + 1 sentence on why it matters operationally]\n- [Development 2 — 1 headline sentence + 1 sentence on why it matters operationally]\n- [Development 3 — 1 headline sentence + 1 sentence on why it matters operationally]\n\n**DEEP DIVE: [Most important story headline]**\n\n[250–300 words. Cover: what happened, the upstream/downstream cause, what it means for freight costs/lead times/sourcing, and one concrete action ops managers should take this week.]\n\n**2 MORE THINGS YOU NEED TO KNOW**\n\n**[Story 1 headline]**\n[4–5 sentences: what happened, who is affected, what the operational or cost implication is, what to monitor.]\n\n**[Story 2 headline]**\n[4–5 sentences: what happened, who is affected, what the operational or cost implication is, what to monitor.]\n\n**REGULATORY WATCH**\n\n[Specific regulation or policy change: name it, state the deadline, state the fine or consequence, state who is affected and what they must do. If there is nothing regulatory in the data, write: \"No major regulatory changes this week.\" — do not omit the section.]\n\n**TOOL SPOTLIGHT**\n\n[Name the tool. State the problem it solves in one sentence. Give one concrete example of how a supply chain team would use it this week. 3–4 sentences total.]\n\n**THE NUMBER**\n\n[Bold the number. One sentence on what it measures. One sentence on why it is moving. One sentence on what to watch.]\n\n\n</instructions>\n\n<input_data>\nnews: {{ $json.newsText }}\n</input_data>"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.3,
+          "topP": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        112
+      ],
+      "id": "00d2d571-e7f1-41cb-b284-57d51020acca",
+      "name": "analyst",
+      "credentials": {
+        "openAiApi": {
+          "id": "ujboDsICeAaisvf1",
+          "name": "Qurb"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Format for Claude": {
+      "main": [
+        [
+          {
+            "node": "analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Newsletter Content": {
+      "main": [
+        [
+          {
+            "node": "Create Doc",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "reddit posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 am": {
+      "main": [
+        [
+          {
+            "node": "freightwaves",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "supplychain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "journal_of commerce",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "trade_ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "trade_ready": {
+      "main": [
+        [
+          {
+            "node": "dAte_filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "journal_of commerce": {
+      "main": [
+        [
+          {
+            "node": "Date_filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supplychain": {
+      "main": [
+        [
+          {
+            "node": "date_Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "freightwaves": {
+      "main": [
+        [
+          {
+            "node": "date_filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "reddit posts",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format for Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "date_filter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "date_Filter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Date_filter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "dAte_filter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Write Newsletter": {
+      "main": [
+        [
+          {
+            "node": "send - Issue Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Doc": {
+      "main": [
+        [
+          {
+            "node": "Write Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supply Chain Analyst": {
+      "main": [
+        []
+      ]
+    },
+    "reddit posts": {
+      "main": [
+        [
+          {
+            "node": "clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write r/posts": {
+      "main": [
+        [
+          {
+            "node": "send - reddit post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reddit Doc": {
+      "main": [
+        [
+          {
+            "node": "Write r/posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean": {
+      "main": [
+        [
+          {
+            "node": "reddit Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "analyst": {
+      "main": [
+        [
+          {
+            "node": "Extract Newsletter Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "timezone": "UTC",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v0",
+    "binaryMode": "separate",
+    "errorWorkflow": "wHH9GYZ9Qn01FFRV"
+  },
+  "versionId": "16ba8aa3-b451-4918-a623-e7b474c6d9ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "VFA0ksaI5jAnf90O",
+  "tags": []
+}
