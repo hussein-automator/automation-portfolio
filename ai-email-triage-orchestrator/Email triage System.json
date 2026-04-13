@@ -1,0 +1,594 @@
+{
+  "name": "Email triage System",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1920,
+        -320
+      ],
+      "id": "9a0932ac-dfee-4d5c-bd32-2b64d570daad",
+      "name": "Get a message",
+      "webhookId": "d7b8da29-ffa9-46da-9e26-afc8f09dd227",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2368,
+        32
+      ],
+      "id": "3a9b301d-a378-4d05-add1-9bd09c60e021",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "34777d7e-33ee-45c9-8537-d4562970fb39",
+              "name": "Label",
+              "value": "={{ JSON.parse($json.text).topic_label }}",
+              "type": "string"
+            },
+            {
+              "id": "3ccc7f97-3928-485d-abaa-10ff44a66ba0",
+              "name": "subject",
+              "value": "={{ $('clean text').item.json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "9fd9632c-721e-4547-9608-8725ba6d0f48",
+              "name": "threadId",
+              "value": "={{ $('clean text').item.json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "07b54cbe-3b2d-4f1e-851d-cd3b4f5c9964",
+              "name": "messageId",
+              "value": "={{ $('Get a message').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e41334c0-12c4-4816-9b68-a41805ef176d",
+              "name": "customerEmail",
+              "value": "={{ $('clean text').item.json.customerEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "5e1489f5-1419-4cb4-a76d-ff2989247b4e",
+              "name": "inboundBody",
+              "value": "={{ $('clean text').item.json.inboundBody }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        -320
+      ],
+      "id": "c4f223aa-80e2-463e-ad37-b46e6c57ade3",
+      "name": "LABEL"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Helpers ---\nfunction extractEmailAddress(fromObj) {\n  // Check for the specific structure in your JSON: from.value[0].address\n  if (fromObj && fromObj.value && fromObj.value[0] && fromObj.value[0].address) {\n    return fromObj.value[0].address.toLowerCase();\n  }\n  // Fallback for string-based \"From\" headers\n  if (typeof fromObj === 'string') {\n    const match = fromObj.match(/<([^>]+)>/);\n    return match ? match[1].trim().toLowerCase() : fromObj.trim().toLowerCase();\n  }\n  return '';\n}\n\nfunction b64urlDecode(str) {\n  if (!str) return '';\n  str = str.replace(/-/g, '+').replace(/_/g, '/');\n  const pad = str.length % 4;\n  if (pad) str += '='.repeat(4 - pad);\n  try {\n    return Buffer.from(str, 'base64').toString('utf8');\n  } catch (e) {\n    return str; // Return as is if not base64\n  }\n}\n\nfunction findTextPlain(payload) {\n  if (!payload || !payload.parts) return '';\n  const parts = payload.parts || [];\n  for (const p of parts) {\n    if (p.mimeType === 'text/plain' && p.body && p.body.data) {\n      return b64urlDecode(p.body.data);\n    }\n    if (p.parts) {\n      const nested = findTextPlain(p);\n      if (nested) return nested;\n    }\n  }\n  return '';\n}\n\nfunction stripQuoted(text) {\n  if (!text) return '';\n  const patterns = [\n    /\\nOn .*wrote:\\n[\\s\\S]*$/i,\n    /\\nFrom: .*[\\s\\S]*$/i,\n    /\\n-----Original Message-----[\\s\\S]*$/i\n  ];\n  let t = text.trim();\n  for (const re of patterns) t = t.replace(re, '').trim();\n  return t;\n}\n\n// --- Main ---\n// Check if we are dealing with the nested \"payload\" structure or the flat JSON provided\nconst payload = $json.payload || null;\n\n// Subject\nconst subject = $json.subject || (payload ? (payload.headers.find(h => h.name === 'Subject') || {}).value : '');\n\n// From / Customer Email\nconst fromRaw = $json.from ? $json.from.text : ''; \nconst customerEmail = extractEmailAddress($json.from);\n\n// Body Text\n// Priority: 1. Direct \"text\" key (your JSON) 2. \"textPlain\" 3. Crawl payload parts\nlet bodyText = $json.text || $json.textPlain || findTextPlain(payload) || $json.snippet || '';\nbodyText = stripQuoted(bodyText);\n\nconst snippet = (bodyText || '').slice(0, 2000);\n\nreturn [{\n  json: {\n    threadId: $json.threadId || '',\n    messageId: $json.messageId || $json.id || '',\n    subject: subject,\n    fromRaw: fromRaw,\n    customerEmail: customerEmail,\n    dateRaw: $json.date || '',\n    inboundBody: bodyText,\n    inboundSnippet: snippet\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1696,
+        -320
+      ],
+      "id": "25621bce-99f4-415d-bc1f-a74ecdfb7f29",
+      "name": "clean text"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{$json.subject}}\nFrom: {{$json.customerEmail}}\nBody: {{ JSON.stringify($json.inboundBody) }}\n\nReturn JSON exactly:\n{\n  \"topic_label\": \"<one of: Gold Class Team | Money | Newsletter | Nick S. | NO LABEL | Personal | Quote requests | SocialP | Upwork-Jobs>\"\n}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an email triage classifier for a personal inbox. Return **ONLY** valid JSON. No markdown. No extra keys.\n\n### **Topic Labels**\nChoose exactly one `topic_label` from this list:\n* Gold Class Team\n* Money\n* Newsletter\n* Nick S.\n* NO LABEL\n* Personal\n* Quote requests\n* SocialP\n* Upwork-Jobs\n\n\n### **Classification Rules**\n\n* **Gold Class Team:** Emails related to internal team projects, collaboration, or communication specifically for the \"Gold Class\" group.\n* **Money:** Financial updates, bank statements, payment confirmations, or general bills.\n* **Newsletter:** Subscriptions, daily digests, marketing blasts, or informational mailings from organizations.\n* **Nick S.:** Direct correspondence from Nick S. or threads where he is a primary contact.\n* **NO LABEL:** Use if the email is spam, junk, or does not clearly fit any of the defined categories.\n* **Personal:** Private correspondence from friends or family, personal health, or individual hobbies not related to work.\n* **Quote requests:** Inquiries regarding pricing, project estimates, or formal service requests.\n* **SocialP:** Notifications or messages specifically related to SocialP platforms or community interactions.\n* **Upwork-Jobs:** New job postings, contract updates, or correspondence from the Upwork platform."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1472,
+        -320
+      ],
+      "id": "f5245fd9-b221-491c-884f-05799661c6cc",
+      "name": "classifier"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.Label }}",
+        "options": {
+          "systemMessage": "=<role>\nYou are the Gmail Labeler Agent — a specialized sub-agent responsible for classifying incoming emails, applying the correct Gmail label, marking emails as read, and triggering Telegram notifications when required.\n</role>\n\n<objective>\nAnalyze the incoming email passed to you in <email_input>, determine the correct label by fetching available labels from Gmail, apply that label, mark the email as read, and send a Telegram notification if the label contains the keyword \"upwork\".\n</objective>\n\n<email_input>\n{{ $json.messageId }}\n{{ $json.Label }}\n</email_input>\n\n<workflow>\n\n  <step id=\"1\" name=\"Fetch Available Labels\">\n    Call the [GET LABELS] tool to retrieve the full list of labels currently configured \n    in Gmail.\n    - Store the returned list for use in Step 2.\n    - Do NOT proceed to Step 2 without a successful response from this tool.\n    - Do NOT guess, infer, or hardcode any label names. Only use what [GET LABELS] returns.\n  </step>\n\n  <step id=\"2\" name=\"Select Label\">\n    Analyze the email content (sender, subject, body) and select the single most \n    appropriate label from the list returned in Step 1.\n    - ONLY select a label that exists in the [GET LABELS] response.\n    - Do NOT create, modify, or map to a label not in that list.\n    - If no label is a clear match, select the closest relevant label from the list \n      and log your reasoning.\n  </step>\n\n  <step id=\"3\" name=\"Apply Label\">\n    Call the [ADD LABEL] tool using the exact label value selected in Step 2.\n    - Pass the label string exactly as returned by [GET LABELS] — no reformatting.\n    - Confirm the tool returns a success response before proceeding.\n    - Do NOT proceed to Step 4 if this step fails.\n  </step>\n\n  <step id=\"4\" name=\"Mark as Read\">\n    Call the [MARK AS READ] tool to mark the email as read.\n    - This step MUST only run after Step 3 confirms a successful label application.\n    - Under no circumstances should this step execute before or without Step 3 completing.\n  </step>\n\n  <step id=\"5\" name=\"Upwork Notification (Conditional)\">\n    Check whether the label applied in Step 3 contains the keyword \"upwork\" \n    (case-insensitive).\n    - IF TRUE: Immediately send a Telegram notification with the following details:\n        • Email subject\n        • Sender name / address\n        • Label applied\n        • Timestamp\n    - IF FALSE: Skip this step. No notification is sent.\n  </step>\n\n</workflow>\n\n<constraints>\n  CRITICAL — These rules are non-negotiable and override all other behavior:\n\n  1. [GET LABELS] MUST always be called before [ADD LABEL]. No exceptions.\n  2. Labels MUST be selected from the [GET LABELS] response only. Never map, guess, or invent labels — this causes errors.\n  3. [MARK AS READ] MUST NOT be called unless [ADD LABEL] has returned a success response.\n  4. If any step fails, halt the workflow immediately and return an error log. \n     Do not skip to a later step.\n  5. Telegram notification is ONLY triggered when the applied label contains \"upwork\" \n     (case-insensitive match). Do not notify for any other label.\n</constraints>\n\n<error_handling>\n  - [GET LABELS] fails → Halt. Return: \"Label fetch failed. No actions taken.\"\n  - [ADD LABEL] fails → Halt. Do NOT mark email as read. Return: \"Label apply failed. Email not marked as read.\"\n  - [MARK AS READ] fails → Log error. Label has already been applied — report partial success.\n  - Telegram send fails → Log error. Do not retry automatically. Report to orchestrator.\n</error_handling>\n\n<tools>\n  - [GET LABELS]: Fetches all available Gmail labels for the account.\n  - [ADD LABEL]: Applies a specified label to the target email.\n  - [MARK AS READ]: Marks the target email as read in Gmail.\n  - [TELEGRAM NOTIFY]: Sends an instant notification message to the configured Telegram channel/chat.\n</tools>\n\n<!-- CONSTRAINT REMINDER (end-of-prompt reinforcement) -->\n<!-- GET LABELS → ADD LABEL → MARK AS READ. Always in this order. Never skip steps. Never use a label not returned by GET LABELS. Never mark as read without a label.\nUse the output from the code node as the inbound body for telegram. Always execute the code node before the telegram node if the notification is for Upwork-->"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -800,
+        -96
+      ],
+      "id": "d73dfe24-7905-44a5-ae5c-587b3dda8e07",
+      "name": "gmail labeler"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.messageId }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', `Select the label id returned by 'GET LABEL' tool not names to avoid flagging an error`, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -768,
+        112
+      ],
+      "id": "fc0a03d6-0cf5-46cc-943c-f9670dd2fc9c",
+      "name": "Add label",
+      "webhookId": "380a5fb4-eba5-4d85-a7fb-7e19d23a73b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', `Find and return only the matching Label just as passed from the 'email_admin' agent`, 'boolean') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        112
+      ],
+      "id": "0da97b99-b18b-4547-8756-dbad6bc04192",
+      "name": "Get labels",
+      "webhookId": "380a5fb4-eba5-4d85-a7fb-7e19d23a73b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        112
+      ],
+      "id": "0e1a936f-4b2c-4931-b537-2fa3fe84a6d9",
+      "name": "mark read",
+      "webhookId": "380a5fb4-eba5-4d85-a7fb-7e19d23a73b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -896,
+        112
+      ],
+      "id": "9206acec-2351-4003-8504-9f86ad2d6235",
+      "name": "Brain",
+      "credentials": {
+        "openAiApi": {
+          "id": "WSid4kFxYV4SWA0J",
+          "name": "sean"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1527662988",
+        "text": "=ðŸ“¬ New Upwork Job Post!\n\nTitle: {{ $('LABEL').item.json.subject }}\nDate: {{ $now.format('yyyy-MM-dd HH:mm') }}\n\nbody: {{ $('clean text').item.json.inboundSnippet }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "e2edc3ed-b16d-467c-be8f-219966355b1a",
+      "name": "Send Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -144
+      ],
+      "webhookId": "4b1d216a-624a-4a4c-940f-7bbd17b23451",
+      "credentials": {
+        "telegramApi": {
+          "id": "SHjkbDuTVwysOXQB",
+          "name": "hussein_bots"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"action_summary\": {\n    \"tool_used\": \"gmail_labeler\",\n    \"sender\": \"noreply@redditmail.com\",\n    \"result\": \"the label 'Newsletter' was identified and applied to that email.\"\n  },\n  \"status\": \"Completed\",\n  \"applied_label\": \"Newsletter\",\n  \"next_steps_options\": [\n    \"Archive the message\",\n    \"Mark as read\",\n    \"Move to a specific folder/label\",\n    \"Apply additional labels or filters\"\n  ],\n  \"prompt\": \"Which would you like me to do next?\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        -96
+      ],
+      "id": "8033099b-0d15-4c56-85f3-ec61169bb73c",
+      "name": "Structured Output"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Label: {{ $json.Label }}\nFrom: {{ $json.customerEmail }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=<role>\nYou are a senior Email Orchestration Agent with deep expertise in virtual assistant operations and office administration. Your sole function is to coordinate sub-agents to correctly classify and label incoming emails in Gmail.\n</role>\n\n<objective>\nFor each email that requires labeling, execute the following two-step workflow in strict sequential order. Do not skip, reverse, or merge these steps.\n</objective>\n\n<workflow>\n  <step id=\"1\" name=\"Retrieve Label\">\n    Invoke the [gmail_labeler] sub-agent, passing the email context (sender, subject, body snippet) as input. Wait for the agent to return the appropriate label before proceeding. Do NOT proceed to Step 2 without a confirmed label from this agent.\n  </step>\n\n  <step id=\"2\" name=\"Apply Label\">\n    Using the label returned by [gmail_labeler] in Step 1, invoke the [Add Label] tool to apply that label to the email. Use the label value exactly as returned — do not modify, infer, or substitute it.\n  </step>\n</workflow>\n\n<constraints>\n  - ALWAYS run [gmail_labeler] before [Add Label]. This order is mandatory.\n  - NEVER call [Add Label] with a label that was not explicitly returned by [gmail_labeler].\n  - If [gmail_labeler] returns no label or an error, halt the workflow and log the \n    failure for review. Do not apply any label.\n  - Do not add commentary, summaries, or explanations between steps unless logging \n    an error condition.\n</constraints>\n\n<tools>\n  - [gmail_labeler]: Analyzes email content and returns the correct Gmail label.\n  - [Add Label]: Applies a specified label to the target email in Gmail.\n</tools>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -640,
+        -320
+      ],
+      "id": "fc644536-9fbd-43ea-8dc8-9d9147156a06",
+      "name": "email_admin"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb36dd7d-cda0-4814-80dd-d836086ffd4c",
+              "leftValue": "={{ $json.output.applied_label }}",
+              "rightValue": "Upwork-Jobs",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -144,
+        -320
+      ],
+      "id": "101cc862-df8c-4925-b364-52a42e757b50",
+      "name": "upwork?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2144,
+        32
+      ],
+      "id": "65bca0f0-e9e6-4541-985a-ba6f2716e46d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1472,
+        -112
+      ],
+      "id": "24ee9b66-f879-42dd-8c33-9d4a3f1fc214",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ujboDsICeAaisvf1",
+          "name": "Qurb"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "clean text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LABEL": {
+      "main": [
+        [
+          {
+            "node": "email_admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean text": {
+      "main": [
+        [
+          {
+            "node": "classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "classifier": {
+      "main": [
+        [
+          {
+            "node": "LABEL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail labeler": {
+      "ai_tool": [
+        [
+          {
+            "node": "email_admin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label": {
+      "ai_tool": [
+        [
+          {
+            "node": "gmail labeler",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get labels": {
+      "ai_tool": [
+        [
+          {
+            "node": "gmail labeler",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark read": {
+      "ai_tool": [
+        [
+          {
+            "node": "gmail labeler",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "gmail labeler",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "email_admin",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email_admin": {
+      "main": [
+        [
+          {
+            "node": "upwork?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "upwork?": {
+      "main": [
+        [
+          {
+            "node": "Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "email_admin",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "wHH9GYZ9Qn01FFRV",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e1ed01e5-7d37-4791-960f-f733db1baefc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "nEPQhyHohgSMFc3Kcswrk",
+  "tags": []
+}
