@@ -1,0 +1,34 @@
+# AI-Powered Email Triage & Telegram Orchestrator
+
+This repository contains an advanced automation system designed to transform a personal or business inbox into an intelligent, self-sorting workspace. Utilizing a recursive multi-agent architecture, the system classifies incoming communications and ensures high-priority opportunities never experience revenue leakage.
+
+## 🚀 Business Value
+* **Operational Efficiency:** Eliminates manual inbox sorting by automatically applying context-aware labels.
+* **Instant Awareness:** Triggers real-time Telegram notifications for specific high-value categories (e.g., Upwork-Jobs), ensuring immediate response times.
+* **Intelligent Prioritization:** Uses LLM-based reasoning to distinguish between personal mail, financial documents, and service inquiries.
+
+## 🛠 Tech Stack
+* **Orchestration:** n8n
+* **LLMs:** GPT-4o & GPT-4o-mini
+* **Integrations:** Gmail API, Telegram Bot API
+* **Logic:** Multi-Agent LangChain (Agent & Tool implementation)
+
+## 🧠 System Architecture
+The workflow operates through a hierarchical delegation model:
+
+1.  **Ingestion:** Polls Gmail for unread messages and cleans the content using a custom JavaScript node to strip quoted text and extract clean body data.
+2.  **Classification:** A dedicated classifier agent analyzes the subject and body to select one of several pre-defined labels (e.g., *Money, Quote Requests, Upwork-Jobs*).
+3.  **The Orchestrator (`email_admin`):** A senior-level agent that manages sub-agents to verify existing Gmail labels and apply the correct identification.
+4.  **Labeler Tool:** A specialized tool that fetches live labels from the Gmail API to ensure zero-error application before marking the email as read.
+5.  **Conditional Notification:** If an email is identified as an "Upwork-Jobs" lead, the system pushes a structured HTML notification to Telegram.
+
+## 📋 Setup Instructions
+1.  **Gmail Credentials:** OAuth2 connection with `https://www.googleapis.com/auth/gmail.modify` scope.
+2.  **Environment Variables:**
+    * `OPENAI_API_KEY`: Required for the agentic reasoning nodes.
+    * `TELEGRAM_BOT_TOKEN`: Required for real-time alerts.
+    * `CHAT_ID`: Your specific Telegram chat ID.
+3.  **Label Configuration:** Ensure the labels defined in the `classifier` node exist in your Gmail account or allow the agent to map them to the closest existing match.
+
+---
+*Developed by Hussein Adebayo ("Automate") — Expert in Speed-to-Lead Automation Engines.*
