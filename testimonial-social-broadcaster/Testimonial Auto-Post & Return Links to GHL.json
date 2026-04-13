@@ -1,0 +1,3143 @@
+{
+  "name": "Socialbu Auto-Post & Return Links to GHL",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "socialbu_post",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "x-ghl-signature",
+                "value": "YOUR_SHARED_SECRET"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -8128,
+        1808
+      ],
+      "id": "db18a117-031d-44a9-9427-b663ab185398",
+      "name": "Webhook",
+      "webhookId": "0a81d6bf-4a6b-48f2-a616-7190f1b565f3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36e2b44c-2a1a-441e-a86d-1d7b00b99659",
+              "name": "text",
+              "value": "={{ $json.body.customData.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ac712ae4-ad85-4e02-b4dd-5c67a4cd02a1",
+              "name": "image_url",
+              "value": "={{ $json.body.customData.image }}",
+              "type": "string"
+            },
+            {
+              "id": "b70343db-fb3c-44cc-a2ed-a97240bf4cf1",
+              "name": "contact_id",
+              "value": "={{ $json.body.customData.contactId }}",
+              "type": "string"
+            },
+            {
+              "id": "df6113c7-e6b7-4636-90c4-bc00e19ed875",
+              "name": "callback_url",
+              "value": "=https://n8n.physicaltherapycoralsprings.com/webhook/socialbu/store",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6624,
+        1696
+      ],
+      "id": "db307bff-6c8a-4fc8-806b-0690d60f89b6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cc61319e-f97d-4bb0-8e93-8679a4cb3bf3",
+              "leftValue": "={{$json.headers[\"x-ghl-signature\"]}}",
+              "rightValue": "YOUR_SHARED_SECRET",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7472,
+        1808
+      ],
+      "id": "8461709b-5bf7-457f-b979-50f3d3bca773",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6640,
+        2320
+      ],
+      "id": "375a24e1-12df-4eb8-b8c4-9ffc4bf643ae",
+      "name": "do nothing"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Edit Fields').item.json.image_url }}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4608,
+        1712
+      ],
+      "id": "64625953-b0e1-495d-858c-d96243c8030f",
+      "name": "download_image",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://socialbu.com/api/v1/upload_media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMWU5NDg4Zjk4NjY1ZTM1NGNlNGMyYzg1NTljZmFlM2NiNjFlNmJkM2VhMGQ1YTk2ZGZhOTdiYzJjOWEzNTU4NGYxZTVlYzhkODgzNWFiNzgiLCJpYXQiOjE3Mzg3NjcwMDQsIm5iZiI6MTczODc2NzAwNCwiZXhwIjoxNzcwMzAzMDA0LCJzdWIiOiIxMTI4NjciLCJzY29wZXMiOltdfQ.aXCdptPNqKoQDRl40CGSas-3-ldocniqsyp1m_Tx_sYyqM38ef-W7euWj-NIdLPInaiajGHfUAkG364HuOFurOcs4eJGLGJwsuSrxSmSiF36wbElcVK7BymgFYCMb48QVluRLha5q1LgYkoTFERrQUgd9MQt3Qx-B9eTiaYYIX-MI1Psx-LzGTyXfEkvcr8qFTu3T6MYWThm9tNGEV_qkm3pwdF6NPdj7BnFjTVEGrNr4sk9wVrfdYq9H3TXWZh9sNdbH2_Ma_krTMrRYiLXHRsXjiAGkfnhpOv9d7MJ6V00PoW90N0VpPo4OjH9d7cqnpDhvrRN9crCeGioIjRsjZswZ415c4yrinudvriLBxu0Yg9zX_dgQ9UdLsABU8Up9--xL7xb-qYR29MQ2y42vlAm9b3XqfX7rouFPtsPRNLdryFUFp4Czo22oQ5GRUYSiCMlZXL00GTpEEUGGrXwXhckYZRoiS7F3G4ysCnIrSXAqY7hHb3YrZM3FGw7eMdLHC4aV6Fgo5v49wRetG3krfjEQtucBgvaAXnIUkfyNWptKlIpOuZsANqbSaWqRosug3Qt9anU6OahMca2qjz0NO-vS26yLmEup3hc4f1aWJOQfH3StVA4I3lIVgCn3NnWDoz_zvoaqWiZ3hcrrJwyOdNl9DZZDZBk8FKEo_FrgyY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $binary.data.fileName }}\",\n  \"mime_type\": \"image/jpeg\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3904,
+        1504
+      ],
+      "id": "3fc004db-9fc3-4726-898c-6fbc067994db",
+      "name": "initiate_upload"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.signed_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-amz-acl",
+              "value": "private"
+            },
+            {
+              "name": "Content-Type",
+              "value": "=image/jpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2704,
+        1584
+      ],
+      "id": "f3503b74-1e84-471e-a44e-0e480f2dde77",
+      "name": "upload_img",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://socialbu.com/api/v1/upload_media/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $('initiate_upload').item.json.key }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2208,
+        1584
+      ],
+      "id": "05bc0452-7c50-4eaf-85c7-a84b798b48bb",
+      "name": "status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ddec3c5c-d45a-4f3c-9348-8fcd268d334b",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1616,
+        1328
+      ],
+      "id": "5a7ae428-1d78-4596-a63c-1c617e8375ef",
+      "name": "uploaded"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1632,
+        1808
+      ],
+      "id": "2c2cb659-8d36-45fb-b529-43ff8361ca3d",
+      "name": "Wait",
+      "webhookId": "1792a251-4aa6-4d32-bdaf-bb47e4f35e6d"
+    },
+    {
+      "parameters": {
+        "url": "https://socialbu.com/api/v1/accounts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMWU5NDg4Zjk4NjY1ZTM1NGNlNGMyYzg1NTljZmFlM2NiNjFlNmJkM2VhMGQ1YTk2ZGZhOTdiYzJjOWEzNTU4NGYxZTVlYzhkODgzNWFiNzgiLCJpYXQiOjE3Mzg3NjcwMDQsIm5iZiI6MTczODc2NzAwNCwiZXhwIjoxNzcwMzAzMDA0LCJzdWIiOiIxMTI4NjciLCJzY29wZXMiOltdfQ.aXCdptPNqKoQDRl40CGSas-3-ldocniqsyp1m_Tx_sYyqM38ef-W7euWj-NIdLPInaiajGHfUAkG364HuOFurOcs4eJGLGJwsuSrxSmSiF36wbElcVK7BymgFYCMb48QVluRLha5q1LgYkoTFERrQUgd9MQt3Qx-B9eTiaYYIX-MI1Psx-LzGTyXfEkvcr8qFTu3T6MYWThm9tNGEV_qkm3pwdF6NPdj7BnFjTVEGrNr4sk9wVrfdYq9H3TXWZh9sNdbH2_Ma_krTMrRYiLXHRsXjiAGkfnhpOv9d7MJ6V00PoW90N0VpPo4OjH9d7cqnpDhvrRN9crCeGioIjRsjZswZ415c4yrinudvriLBxu0Yg9zX_dgQ9UdLsABU8Up9--xL7xb-qYR29MQ2y42vlAm9b3XqfX7rouFPtsPRNLdryFUFp4Czo22oQ5GRUYSiCMlZXL00GTpEEUGGrXwXhckYZRoiS7F3G4ysCnIrSXAqY7hHb3YrZM3FGw7eMdLHC4aV6Fgo5v49wRetG3krfjEQtucBgvaAXnIUkfyNWptKlIpOuZsANqbSaWqRosug3Qt9anU6OahMca2qjz0NO-vS26yLmEup3hc4f1aWJOQfH3StVA4I3lIVgCn3NnWDoz_zvoaqWiZ3hcrrJwyOdNl9DZZDZBk8FKEo_FrgyY"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        1168
+      ],
+      "id": "fea2c184-9dda-4f3a-aad7-a6b8467ee78b",
+      "name": "get_accountsIds",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        1168
+      ],
+      "id": "c68bfac8-83b0-456a-a0de-941c3cf06b3e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3328,
+        1584
+      ],
+      "id": "60c5f718-fc7c-4208-9072-a3e41f62a884",
+      "name": "pass_image_binary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b753af95-8ea0-4e43-ac9d-41719b4a818d",
+              "leftValue": "={{ $json.permalink }}",
+              "rightValue": "[null]",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3792,
+        2624
+      ],
+      "id": "0aabe776-5ac0-4a12-8df3-978467c52ce0",
+      "name": "post_link",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/hooks/UppHFLOFzQKdzeIYBvRj/webhook-trigger/fb6ae32e-2a80-4d22-ab58-8e18907f9bc5",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contactId\": \"{{ $json.contactId }}\",\n  \"message\": \"Your success story has been published!\",\n  \"post_urls\": {\n    \"facebook\": \"{{ $json.facebook_url }}\",\n    \"instagram\": \"{{ $json.instagram_url }}\",\n    \"linkedin\": \"{{ $json.linkedin_url }}\",\n    \"twitter\":  \"{{ $json.twitter_url }}\",\n    \"google_business\": \"{{ $json.google_url }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -544,
+        3456
+      ],
+      "id": "c1cb434d-dff9-4a02-a199-13744a2cdf1d",
+      "name": "sendLink2_GHL"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get all items that made it to this node\nconst allItems = $input.all();\n\n// 2. Use .first() to reliably retrieve the single contact ID\nconst contactId = $('Edit Fields').first().json.contact_id;\n\n// 3. Initialize the result object with the URLs\nconst result = {\n  contactId: contactId,\n  facebook_url: \"\",\n  instagram_url: \"\",\n  linkedin_url: \"\",\n  twitter_url: \"\",\n  google_url: \"\"\n};\n\n// 4. Loop through all items and extract URLs by platform\nfor (const item of allItems) {\n  const url = item.json.permalink || \"\";\n  \n  if (url.includes(\"facebook.com\")) {\n    result.facebook_url = url;\n  } else if (url.includes(\"instagram.com\")) {\n    result.instagram_url = url;\n  } else if (url.includes(\"linkedin.com\")) {\n    result.linkedin_url = url;\n  } else if (url.includes(\"twitter.com\")) {\n    result.twitter_url = url; \n  } else if (url.includes(\"google.com\")) {\n    result.google_url = url;\n  }\n}\n\n// 5. Return the result as a single item\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        3456
+      ],
+      "id": "e0649cc4-96ec-4be7-ab87-3ef15d3f50ce",
+      "name": "post_urls"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://socialbu.com/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"accounts\": [114933],\n  \"publish_at\": $now.setZone('America/New_York').plus({ seconds: 30 }).toFormat('yyyy-MM-dd HH:mm:ss'),\n  \"content\": $('content_body').item.json.x_tweet,\n  \"existing_attachments\": [\n    {\n         \"upload_token\": $('file_token').item.json.upload_token\n    }\n  ],\n  \"options\": {\n   \"allow_comment\": true,\n   \"privacy_status\": \"SELF_ONLY\"\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5088,
+        4688
+      ],
+      "id": "d7dfcbf5-57ac-4437-bd43-aa3705f71f70",
+      "name": "post_2_X",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2304,
+        3408
+      ],
+      "id": "294a66d5-2761-4c35-b039-b1592229554a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -5216,
+        1712
+      ],
+      "id": "17bed032-ba19-4bcd-80b5-263c6af09507",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://socialbu.com/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"accounts\": [114927],\n  \"publish_at\": $now.setZone('America/New_York').plus({ seconds: 30 }).toFormat('yyyy-MM-dd HH:mm:ss'),\n  \"content\": $('content_body').item.json.blog_post,\n  \"existing_attachments\": [\n    {\n      \"upload_token\": $('file_token').item.json.upload_token\n    }\n  ],\n  \"options\": {\n   \"allow_comment\": true,\n   \"privacy_status\": \"SELF_ONLY\"\n  },\n  \"postback_url\": $execution.resumeUrl.replace('n8n.physicaltherapycoralsprings.com', 'n8n.physicaltherapycoralsprings.com:8443')\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5056,
+        2672
+      ],
+      "id": "f10224da-b9d6-42fd-9ee1-2c6aadfd1698",
+      "name": "post_2_facebook",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://socialbu.com/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"accounts\": [125296],\n  \"publish_at\": $now.setZone('America/New_York').plus({ seconds: 30 }).toFormat('yyyy-MM-dd HH:mm:ss'),\n  \"content\": $('content_body').item.json.blog_post,\n  \"existing_attachments\": [\n    {\n         \"upload_token\": $('file_token').item.json.upload_token\n    }\n  ],\n  \"options\": {\n   \"allow_comment\": true,\n   \"privacy_status\": \"SELF_ONLY\"\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5056,
+        3792
+      ],
+      "id": "2398ebf0-473b-4ed0-96ac-87b81f44a657",
+      "name": "post_2_GB",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://socialbu.com/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"accounts\": [125294],\n  \"publish_at\": $now.setZone('America/New_York').plus({ seconds: 30 }).toFormat('yyyy-MM-dd HH:mm:ss'),\n  \"content\": $('content_body').item.json.blog_post,\n  \"existing_attachments\": [\n    {\n         \"upload_token\": $('file_token').item.json.upload_token\n    }\n  ],\n  \"options\": {\n   \"allow_comment\": true,\n   \"privacy_status\": \"SELF_ONLY\"\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5072,
+        4240
+      ],
+      "id": "f0ab9ca1-5622-40eb-bb99-8f830f6ef5d9",
+      "name": "post_2_instagram",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://socialbu.com/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"accounts\": [125295],\n  \"publish_at\": $now.setZone('America/New_York').plus({ seconds: 30 }).toFormat('yyyy-MM-dd HH:mm:ss'),\n  \"content\": $('content_body').item.json.blog_post,\n  \"existing_attachments\": [\n    {\n         \"upload_token\": $('file_token').item.json.upload_token\n    }\n  ],\n  \"options\": {\n   \"allow_comment\": true,\n   \"privacy_status\": \"SELF_ONLY\"\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5056,
+        3344
+      ],
+      "id": "fec33b68-aa88-4ea9-9836-343fad645ec1",
+      "name": "post_2_linkedIn",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "siaMXsquX8ElZick",
+          "name": "socialbu"
+        },
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://socialbu.com/api/v1/posts/{{ $('post_2_X').item.json.posts[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4496,
+        4688
+      ],
+      "id": "f4ef8199-5a32-4f80-89f0-1520229c7b76",
+      "name": "post_status1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://socialbu.com/api/v1/posts/{{ $('post_2_instagram').item.json.posts[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4480,
+        4240
+      ],
+      "id": "2fffb613-8b0d-4b2d-b042-97bb3f2d8fb4",
+      "name": "post_status2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        4784
+      ],
+      "id": "a9a97677-ecc3-448f-afa2-899cbf59078f",
+      "name": "30 secs",
+      "webhookId": "48b8b1d1-f2f3-41a2-85ee-8e6f42de883b"
+    },
+    {
+      "parameters": {
+        "url": "=https://socialbu.com/api/v1/posts/{{ $('post_2_facebook').item.json.posts[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4480,
+        2672
+      ],
+      "id": "3d5ec98d-38d5-4d61-bf18-530b210d8587",
+      "name": "post_status",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b753af95-8ea0-4e43-ac9d-41719b4a818d",
+              "leftValue": "={{ $json.permalink }}",
+              "rightValue": "[null]",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3856,
+        4224
+      ],
+      "id": "85a5f8cd-bebc-480f-9e7e-ee9c5fe0ffdd",
+      "name": "post_link2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://socialbu.com/api/v1/posts/{{ $('post_2_linkedIn').item.json.posts[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        3344
+      ],
+      "id": "016fccf0-f5d2-42ba-9506-cba3716a9201",
+      "name": "post_status5",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b753af95-8ea0-4e43-ac9d-41719b4a818d",
+              "leftValue": "={{ $json.permalink }}",
+              "rightValue": "[null]",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3824,
+        3328
+      ],
+      "id": "94b3dff6-da76-4e62-9f1f-f7a3d48dfd72",
+      "name": "post_link5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://socialbu.com/api/v1/posts/{{ $('post_2_GB').item.json.posts[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        3792
+      ],
+      "id": "c3cbd00f-05d6-41e3-b567-973b9bc726a4",
+      "name": "post_status6",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6QDnSFLF0cAqOIOP",
+          "name": "socialbu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b753af95-8ea0-4e43-ac9d-41719b4a818d",
+              "leftValue": "={{ $json.permalink }}",
+              "rightValue": "[null]",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3840,
+        3776
+      ],
+      "id": "bbfe5271-d848-4c55-afb2-76f6b849d436",
+      "name": "post_link6",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        2768
+      ],
+      "id": "07d9cfaf-9143-418f-b0ac-408792910cbe",
+      "name": "Wait2",
+      "webhookId": "186d17b6-6252-404e-ade7-3a8388f84ff4"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        4240
+      ],
+      "id": "155b39eb-0d48-4836-9786-45d470066385",
+      "name": "Wait4",
+      "webhookId": "186d17b6-6252-404e-ade7-3a8388f84ff4"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        3344
+      ],
+      "id": "2bfb140a-d22a-4e66-a271-b0448e88c68c",
+      "name": "Wait5",
+      "webhookId": "186d17b6-6252-404e-ade7-3a8388f84ff4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "permalink",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        3456
+      ],
+      "id": "4149b5bc-e15f-417d-8a83-2948ac3ee3af",
+      "name": "Split_urls"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the text from the input\nconst text = $input.item.json.text || \"\";\n\n// Define markers\nconst blogMarker = \"**BLOG POST:**\";\nconst xMarker = \"**X tweet:**\";\n\n// Initialize result object\nconst result = {\n  blog_post: \"\",\n  x_tweet: \"\",\n  error: null\n};\n\ntry {\n  // Check if both markers exist\n  if (!text.includes(blogMarker) || !text.includes(xMarker)) {\n    result.error = \"Missing required markers in text\";\n    return result;\n  }\n\n  // Extract blog post\n  const blogStart = text.indexOf(blogMarker) + blogMarker.length;\n  const blogEnd = text.indexOf(xMarker);\n  result.blog_post = text.substring(blogStart, blogEnd).trim();\n\n  // Extract X tweet\n  const xtweetStart = text.indexOf(xMarker) + xMarker.length;\n  result.x_tweet = text.substring(xtweetStart).trim();\n\n} catch (error) {\n  result.error = error.message;\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5936,
+        1712
+      ],
+      "id": "a505d11c-d60a-483b-a2ac-de3899952040",
+      "name": "content_body"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        3792
+      ],
+      "id": "c212a1df-a05e-4d29-a386-b603e52633c6",
+      "name": "Wait3",
+      "webhookId": "fc061a22-a368-41e7-966f-758cff46fa9a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b753af95-8ea0-4e43-ac9d-41719b4a818d",
+              "leftValue": "={{ $json.permalink }}",
+              "rightValue": "[null]",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3888,
+        4672
+      ],
+      "id": "0c3de7d2-d094-4873-8029-216c6f9fc02c",
+      "name": "post_url",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "face11f3-25d4-4e76-b17c-996f6adf8440",
+              "name": "upload_token",
+              "value": "={{ $json.upload_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5712,
+        3856
+      ],
+      "id": "8264bca8-7137-49ea-a3fd-fab1f6c00076",
+      "name": "file_token"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        2608
+      ],
+      "id": "8318df23-64f4-4648-87ad-16cdf6782c37",
+      "name": "20_secs",
+      "webhookId": "45c54be4-bf1e-4a0e-bd87-eec052e33d45"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        4432
+      ],
+      "id": "94c22e52-a00f-4df1-8508-33a9f2740bd9",
+      "name": "20 sec",
+      "webhookId": "48b8b1d1-f2f3-41a2-85ee-8e6f42de883b"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        3984
+      ],
+      "id": "a511c6ed-661b-4835-bfe6-badce3f1c0bb",
+      "name": "20=secs",
+      "webhookId": "48b8b1d1-f2f3-41a2-85ee-8e6f42de883b"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3024,
+        3536
+      ],
+      "id": "5c1a1040-7c3b-4e71-b9ad-0584683671ce",
+      "name": "20_SECS",
+      "webhookId": "48b8b1d1-f2f3-41a2-85ee-8e6f42de883b"
+    },
+    {
+      "parameters": {
+        "sendTo": "bodypurenow@gmail.com",
+        "subject": "Error in download_image node Socialbu + GHL n8n workflow",
+        "emailType": "text",
+        "message": "=Error message: Invalid URL: . URL must start with \"http\" or \"https\".\n\nThis error was caused because no image was uploaded by {{ $('Edit Fields').item.json.body.customData.contactId }} from the GHL level form",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -3904,
+        2016
+      ],
+      "id": "3507ca22-aee7-4924-81e0-3c9dbf9bb365",
+      "name": "no_image",
+      "webhookId": "4439833a-64fa-4868-8665-32a94762eeeb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7AvMDWou8YhCgPD8",
+          "name": "Gmail account - - fyzicaltherapycs@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 🌐 Webhook – SocialBu Post Trigger\n## This node receives data from an external system using a webhook.\n\nIn simple words:\n\nListens for POST requests at the socialbu_post endpoint\n\nReceives JSON data from GoHighLevel (GHL)\n\nAccepts form submissions, contact details, and custom content\n\nUses a shared secret (x-ghl-signature) for basic verification\n\nInstantly triggers the workflow when data is received\n\n### 👉 In short:\n### This node acts as the entry point — it catches incoming data from GHL and starts the automation for SocialBu posting.",
+        "height": 528,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -8704,
+        1600
+      ],
+      "typeVersion": 1,
+      "id": "424b932f-5269-4cdf-8394-44484671c528",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# 🔐 If – Signature Validation\n## This node verifies the request is coming from a trusted source.\n\nChecks the x-ghl-signature header\n\nCompares it with the shared secret\n\nAllows the workflow to continue only if it matches\n\n### 👉 In short:\n### This node protects the workflow from unauthorized requests.",
+        "height": 400,
+        "width": 592
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7888,
+        1664
+      ],
+      "typeVersion": 1,
+      "id": "c380db9a-4d94-4c9b-8b69-1dc5672d8c1d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# ✏️ Edit Fields – Prepare SocialBu Payload\n## This node extracts and formats the required data.\n\nPulls post text from customData.text\n\nPulls image URL from customData.image\n\nStores the contact ID for tracking\n\nSets a callback URL for SocialBu responses\n\n### 👉 In short:\n### This node cleans and structures data before sending it to SocialBu.",
+        "height": 480,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7232,
+        1552
+      ],
+      "typeVersion": 1,
+      "id": "ee90677d-9609-4b70-9128-7a1236d938e7",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# ⛔ Do Nothing – Invalid Request Path\n## This node handles failed validation cases.\n\nRuns when the signature check fails\n\nPrevents any further processing\n\n### 👉 In short:\n### This node safely stops the workflow if the request is not trusted.",
+        "height": 352,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7232,
+        2160
+      ],
+      "typeVersion": 1,
+      "id": "a8c2513a-450b-467e-a4bf-4efc041b9030",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# 🧠 content_body\n## This node separates the content into Blog and X (Twitter).\n\nIn simple words:\n\nTakes one big text message\n\nFinds the Blog Post part\n\nFinds the X Tweet part\n\nSplits them into two clean sections\n\nIf something is missing, it marks it as an error\n\n### 👉 In short:\n### This node turns one combined message into ready-to-post content for Blog and X.",
+        "height": 544,
+        "width": 672,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6336,
+        1552
+      ],
+      "typeVersion": 1,
+      "id": "8b8e7912-dd3c-46a6-ba8a-de9d2f2db257",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# 🚦 Limit\n## This node allows only one item to move forward.\n\nIn simple words:\n\nStops duplicate runs\n\nPrevents posting the same thing again\n\nKeeps the workflow clean and safe\n\n### 👉 In short:\n### This node makes sure the workflow runs only once.",
+        "height": 352,
+        "width": 576,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5632,
+        1568
+      ],
+      "typeVersion": 1,
+      "id": "f8ea93d1-0d64-4514-96eb-1bd956695319",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# 🖼️ download_image\n## This node downloads the image from a link.\n\nIn simple words:\n\nTakes the image URL\n\nDownloads the image automatically\n\nIf the image fails, the workflow still continues\n\nAllows text-only posting if needed\n\n### 👉 In short:\n### This node safely fetches the image without breaking the automation.",
+        "height": 416,
+        "width": 576,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5008,
+        1568
+      ],
+      "typeVersion": 1,
+      "id": "220e1c7e-3cb9-45aa-834c-edde385859c4",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "# 🚀 initiate_upload\n## This node starts the image upload process to SocialBu.\n\nIn simple words:\n\nSends the image name to SocialBu\n\nTells SocialBu what type of file it is (image)\n\nGets permission to upload the image\n\nPrepares everything before the actual upload\n\n### 👉 In short:\n### This node tells SocialBu “Hey, an image is coming. Get ready.”",
+        "height": 432,
+        "width": 672,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4336,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "3bc43f37-9b5b-4b3c-9692-e2766def636e",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "# ⚠️ no_image\n## This node sends an alert when no image is found.\n\nIn simple words:\n\nChecks if the image link is missing or broken\n\nSends an email notification\n\nExplains why the image was not uploaded\n\nHelps you know something went wrong\n\n### 👉 In short:\n### This node warns you when someone submits the form without an image.",
+        "height": 432,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4336,
+        1872
+      ],
+      "typeVersion": 1,
+      "id": "c894c5e8-de01-4d31-abd3-87758deab0d3",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "# 🔀 pass_image_binary\n## This node joins image data together.\n\nIn simple words:\n\nTakes the image file\n\nCombines it with upload details\n\nMakes sure nothing is missing\n\nKeeps image and info in one place\n\n### 👉 In short:\n### This node passes the image safely to the next step.",
+        "height": 400,
+        "width": 448,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3648,
+        1456
+      ],
+      "typeVersion": 1,
+      "id": "47e1210d-a8aa-4755-93fb-5d8bd5a282f8",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "# 🖼️ upload_img\n## This node uploads the actual image file.\n\nIn simple words:\n\nTakes the image file from the workflow\n\nUploads it using a secure upload link\n\nSends the image exactly as required\n\nWorks even if the next step fails\n\n### 👉 In short:\n### This node physically uploads the image to SocialBu.",
+        "height": 432,
+        "width": 592,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3168,
+        1488
+      ],
+      "typeVersion": 1,
+      "id": "93db6074-adde-45ef-9bdf-0c3643bcca67",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "# 📡 status\n## This node checks if the image upload was successful.\n\nIn simple words:\n\nAsks SocialBu for upload status\n\nChecks whether the image is ready to use\n\nConfirms the upload finished properly\n\nPrevents using a broken or incomplete image\n\n### 👉 In short:\n### This node confirms the image was uploaded correctly and is ready to post.",
+        "height": 496,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2560,
+        1472
+      ],
+      "typeVersion": 1,
+      "id": "a2f72327-3c91-4a6f-b23b-68631cb44695",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "# ✅ uploaded\n## This node checks if the image upload is complete.\n\nIn simple words:\n\nLooks at the response message\n\nChecks if it contains the word “uploaded”\n\nDecides whether the upload finished successfully\n\nControls the next step based on upload status\n\n### 👉 In short:\n### This node confirms whether the image upload is done or not.",
+        "height": 464,
+        "width": 576
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2032,
+        1136
+      ],
+      "typeVersion": 1,
+      "id": "8628752e-bd2c-4638-abb3-ca3816905382",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "# ⏳ Wait\n## This node pauses the workflow if upload is not ready.\n\nIn simple words:\n\nWaits for 60 seconds\n\nGives SocialBu time to finish processing the image\n\nPrevents moving forward too early\n\nUsed only when upload is still in progress\n\n### 👉 In short:\n### This node adds a delay so the system can finish uploading.",
+        "height": 448,
+        "width": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1952,
+        1696
+      ],
+      "typeVersion": 1,
+      "id": "22879608-238e-4a7f-afe4-53fb354081e5",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "# 🔑 file_token\n## This node saves the upload token for later use.\n\nIn simple words:\n\nExtracts the upload_token from the response\n\nStores it in a clean field\n\nMakes the token available for posting the image\n\nEnsures the correct file reference is used\n\n### 👉 In short:\n### This node stores the uploaded image’s token for the next steps.",
+        "height": 432,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6192,
+        3712
+      ],
+      "typeVersion": 1,
+      "id": "e293bafc-75e6-4645-b957-a521bb95adba",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "# 🔍 post_link\n## This node checks whether the Facebook post link is available.\n\nIn simple words:\n\nLooks at the permalink field in the response\nChecks if the permalink is empty or null\nDetermines whether the post is fully published\nDecides if the workflow should wait or retry\n\n### 👉 In short:\n### This node verifies if the Facebook post link has been generated.",
+        "height": 2528,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4128,
+        2512
+      ],
+      "typeVersion": 1,
+      "id": "27895880-0f31-4d7d-9d7a-0dcc9ecbf3f3",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "# 📤 post_2_facebook\n## This node creates a Facebook post using SocialBu API.\n\nIn simple words:\n\nSends a POST request to SocialBu\nPublishes content to the selected Facebook account\nAttaches the uploaded image using upload_token\nSchedules the post 30 seconds ahead (New York time)\nControls privacy and comment settings\nSets a postback URL for status updates\n\n### 👉 In short:\n###This node publishes the Facebook post with text and image.",
+        "height": 2480,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5504,
+        2512
+      ],
+      "typeVersion": 1,
+      "id": "209913a8-00e8-4e04-adf0-13b4145cb3f8",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "# 📊 post_status\n## This node checks the status of the published post.\n\nIn simple words:\n\nFetches post details using the post ID\nRetrieves the permalink and publish status\nConfirms whether the post is live\nFeeds data back into the workflow\n\n### 👉 In short:\n### This node confirms if the Facebook post is successfully published.",
+        "height": 2528,
+        "width": 672,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4848,
+        2512
+      ],
+      "typeVersion": 1,
+      "id": "f3f22782-97d4-42ef-bdd5-fd9c06208fe6",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "# ⏱️ 20_secs\n## This node adds a short delay before checking post status.\n\nIn simple words:\n\nWaits for 20 seconds\nGives SocialBu time to generate the post link\nPrevents early status checks\nImproves reliability of permalink fetching\n\n### 👉 In short:\n### This node waits briefly before rechecking post status.\n# ⏳ Wait2\n## This node adds a longer retry delay if the post link is still missing.\n\nIn simple words:\n\nWaits for 10 seconds\nUsed when permalink is still not ready\nAllows retry without failing the workflow\nHelps handle slow API responses\n\n### 👉 In short:\n### This node delays the workflow to retry fetching the post link.",
+        "height": 2496,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3536,
+        2512
+      ],
+      "typeVersion": 1,
+      "id": "a81f0b23-e455-4e30-8082-94836e260efb",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "# 🔀 Merge\n## This node combines post results from multiple platforms.\n\nIn simple words:\n\nCollects results from Facebook, Instagram, LinkedIn, Twitter, and Google\nBrings all post responses into one place\nMakes sure nothing is missed\nPrepares the data for clean processing\n\n### 👉 In short:\n### This node gathers all social post results together.",
+        "height": 512,
+        "width": 576,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2736,
+        3152
+      ],
+      "typeVersion": 1,
+      "id": "8dfa8434-109b-4d29-a489-db9eb1191227",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "# ✂️ Split_urls\n## This node separates each post link one by one.\n\nIn simple words:\n\nTakes multiple permalink URLs\nSplits them into individual items\nMakes each link easier to identify\nPrepares links for platform detection\n\n### 👉 In short:\n### This node breaks all post links into single URLs.",
+        "height": 400,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2144,
+        3328
+      ],
+      "typeVersion": 1,
+      "id": "b4599b4f-7528-44f7-8115-6e1cd6832079",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "# 🧠 post_urls\n## This node identifies which link belongs to which platform.\n\nIn simple words:\n\nReads all post URLs\nDetects platform based on the link\nAssigns links to Facebook, Instagram, LinkedIn, Twitter, and Google\nKeeps the contact ID linked to the post\nCreates one clean result\n\n### 👉 In short:\n### This node organizes post links by platform.",
+        "height": 384,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1568,
+        3360
+      ],
+      "typeVersion": 1,
+      "id": "79a762b0-d1db-4cf3-bc52-1172fcd3734c",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "# 🚀 sendLink2_GHL\n## This node sends the published post links to GoHighLevel.\n\nIn simple words:\n\nSends a message saying “Your success story has been published!”\nIncludes all social media post links\nConnects the message to the correct contact\nUses a webhook to update GoHighLevel automatically\n\n### 👉 In short:\n### This node notifies the contact with all their published post links.",
+        "height": 400,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        3360
+      ],
+      "typeVersion": 1,
+      "id": "27faa4e4-d0e9-495d-b2d4-39c855cf2242",
+      "name": "Sticky Note22"
+    }
+  ],
+  "pinData": {
+    "get_accountsIds": [
+      {
+        "json": {
+          "id": 114927,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "facebook.page",
+          "_type": "Facebook Page",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/114927.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=adfb43ad3ce4bfdb4b6da34958b8139844605d90d962220d8174be770270d64a",
+          "post_maxlength": 5000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "bmp",
+            "tiff",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 80,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              120,
+              null
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 1,
+            "max": 7200
+          },
+          "user_id": 112867,
+          "account_id": "110919554884221",
+          "public_id": "ry3zoevjwr5k4lz35n4p87dxgm9q02n1",
+          "extra_data": {}
+        }
+      },
+      {
+        "json": {
+          "id": 114933,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "twitter.profile",
+          "_type": "X (Twitter) Account",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/114933.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=ed38f2e49fb8bf6df2ae0326a27047fa8fc9c62efd45dcd3fa216adc2c1071b3",
+          "post_maxlength": 280,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "gif",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 4,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              32,
+              32
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 1,
+            "max": 140
+          },
+          "user_id": 112867,
+          "account_id": "1887175138506063872",
+          "public_id": "92r1jnzewqg4yl2mjq060kmo9dv7x835",
+          "extra_data": {
+            "subscription_type": "None",
+            "subscription_type_last_fetched_at": 1762956399
+          }
+        }
+      },
+      {
+        "json": {
+          "id": 125294,
+          "name": "fyzicalcoralsprings",
+          "type": "instagram.api",
+          "_type": "Instagram Business",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125294.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=bd5d3f14468f647bb90eb4c9058ff038c75e1a91bf7c8bcbbe32344be2f37a6f",
+          "post_maxlength": 2000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 10,
+          "post_media_required": true,
+          "video_dimensions": {
+            "min": [
+              480,
+              null
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 900
+          },
+          "user_id": 112867,
+          "account_id": "17841452645448057",
+          "public_id": "y7v1439wj8er2l4rwg06xkqmondzg0y5",
+          "extra_data": {}
+        }
+      },
+      {
+        "json": {
+          "id": 125295,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "linkedin.org",
+          "_type": "LinkedIn Organization",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125295.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=cdce217a55dc79c556dd150ebf3288a007161171624ea47fe21be34463232c52",
+          "post_maxlength": 3000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "gif",
+            "mp4",
+            "qt",
+            "m4v",
+            "mov",
+            "webp",
+            "ppt",
+            "pptx",
+            "pdf",
+            "doc",
+            "docx"
+          ],
+          "max_attachments": 20,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              256,
+              144
+            ],
+            "max": [
+              4096,
+              2304
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 600
+          },
+          "user_id": 112867,
+          "account_id": "105339840",
+          "public_id": "n5xnw3q0m72orpvy5n4pzyj8dk4g1v9e",
+          "extra_data": {}
+        }
+      },
+      {
+        "json": {
+          "id": 125296,
+          "name": "FYZICAL Therapy & Balance Center Coral Springs - 2234 North University Drive",
+          "type": "google.location",
+          "_type": "Google Business Profile",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125296.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=a03998dbd6a74b1f05f3773f4aa390be985f8350c83813d5e892899f4fa3e67d",
+          "post_maxlength": 1500,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "webp"
+          ],
+          "max_attachments": 1,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              1280,
+              720
+            ],
+            "max": [
+              10000,
+              10000
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 30
+          },
+          "user_id": 112867,
+          "account_id": "accounts/108733285718640311258/locations/4507948149255906826",
+          "public_id": "g4ovn95z320rw6g5mzdlmx1qj7dkey8g",
+          "extra_data": {}
+        }
+      },
+      {
+        "json": {
+          "id": 114927,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "facebook.page",
+          "_type": "Facebook Page",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/114927.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=adfb43ad3ce4bfdb4b6da34958b8139844605d90d962220d8174be770270d64a",
+          "post_maxlength": 5000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "bmp",
+            "tiff",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 80,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              120,
+              null
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 1,
+            "max": 7200
+          },
+          "user_id": 112867,
+          "account_id": "110919554884221",
+          "public_id": "ry3zoevjwr5k4lz35n4p87dxgm9q02n1",
+          "extra_data": {},
+          "team_id": 3361,
+          "approvers": [
+            {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            {
+              "id": 140787,
+              "name": "Husseinadebayo2",
+              "email": "husseinadebayo2@gmail.com",
+              "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp"
+            }
+          ],
+          "team": {
+            "id": 3361,
+            "name": "Automation",
+            "user": {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            "created_at": "2025-06-05 17:26:09",
+            "members": [
+              {
+                "id": 112867,
+                "name": "Ari",
+                "email": "fyzicaltherapycs@gmail.com",
+                "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "team.edit",
+                  "posts.create",
+                  "posts.view",
+                  "posts.edit",
+                  "posts.view_drafts",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.view",
+                  "generated_content.generate",
+                  "analyze.view",
+                  "feeds.create",
+                  "feeds.view",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "inbox.manage",
+                  "inbox.config"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              },
+              {
+                "id": 140787,
+                "name": "Husseinadebayo2",
+                "email": "husseinadebayo2@gmail.com",
+                "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "posts.view_drafts",
+                  "posts.view",
+                  "posts.create",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.generate",
+                  "generated_content.view",
+                  "feeds.create",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "analyze.view"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              }
+            ],
+            "requires_content_approval": false
+          }
+        }
+      },
+      {
+        "json": {
+          "id": 114933,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "twitter.profile",
+          "_type": "X (Twitter) Account",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/114933.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=ed38f2e49fb8bf6df2ae0326a27047fa8fc9c62efd45dcd3fa216adc2c1071b3",
+          "post_maxlength": 280,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "gif",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 4,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              32,
+              32
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 1,
+            "max": 140
+          },
+          "user_id": 112867,
+          "account_id": "1887175138506063872",
+          "public_id": "92r1jnzewqg4yl2mjq060kmo9dv7x835",
+          "extra_data": {
+            "subscription_type": "None",
+            "subscription_type_last_fetched_at": 1762956399
+          },
+          "team_id": 3361,
+          "approvers": [
+            {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            {
+              "id": 140787,
+              "name": "Husseinadebayo2",
+              "email": "husseinadebayo2@gmail.com",
+              "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp"
+            }
+          ],
+          "team": {
+            "id": 3361,
+            "name": "Automation",
+            "user": {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            "created_at": "2025-06-05 17:26:09",
+            "members": [
+              {
+                "id": 112867,
+                "name": "Ari",
+                "email": "fyzicaltherapycs@gmail.com",
+                "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "team.edit",
+                  "posts.create",
+                  "posts.view",
+                  "posts.edit",
+                  "posts.view_drafts",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.view",
+                  "generated_content.generate",
+                  "analyze.view",
+                  "feeds.create",
+                  "feeds.view",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "inbox.manage",
+                  "inbox.config"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              },
+              {
+                "id": 140787,
+                "name": "Husseinadebayo2",
+                "email": "husseinadebayo2@gmail.com",
+                "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "posts.view_drafts",
+                  "posts.view",
+                  "posts.create",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.generate",
+                  "generated_content.view",
+                  "feeds.create",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "analyze.view"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              }
+            ],
+            "requires_content_approval": false
+          }
+        }
+      },
+      {
+        "json": {
+          "id": 125294,
+          "name": "fyzicalcoralsprings",
+          "type": "instagram.api",
+          "_type": "Instagram Business",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125294.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140159Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=bd5d3f14468f647bb90eb4c9058ff038c75e1a91bf7c8bcbbe32344be2f37a6f",
+          "post_maxlength": 2000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "mp4",
+            "m4v",
+            "mov",
+            "qt",
+            "avi",
+            "webp"
+          ],
+          "max_attachments": 10,
+          "post_media_required": true,
+          "video_dimensions": {
+            "min": [
+              480,
+              null
+            ],
+            "max": [
+              null,
+              null
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 900
+          },
+          "user_id": 112867,
+          "account_id": "17841452645448057",
+          "public_id": "y7v1439wj8er2l4rwg06xkqmondzg0y5",
+          "extra_data": {},
+          "team_id": 3361,
+          "approvers": [
+            {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            {
+              "id": 140787,
+              "name": "Husseinadebayo2",
+              "email": "husseinadebayo2@gmail.com",
+              "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp"
+            }
+          ],
+          "team": {
+            "id": 3361,
+            "name": "Automation",
+            "user": {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            "created_at": "2025-06-05 17:26:09",
+            "members": [
+              {
+                "id": 112867,
+                "name": "Ari",
+                "email": "fyzicaltherapycs@gmail.com",
+                "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "team.edit",
+                  "posts.create",
+                  "posts.view",
+                  "posts.edit",
+                  "posts.view_drafts",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.view",
+                  "generated_content.generate",
+                  "analyze.view",
+                  "feeds.create",
+                  "feeds.view",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "inbox.manage",
+                  "inbox.config"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              },
+              {
+                "id": 140787,
+                "name": "Husseinadebayo2",
+                "email": "husseinadebayo2@gmail.com",
+                "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "posts.view_drafts",
+                  "posts.view",
+                  "posts.create",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.generate",
+                  "generated_content.view",
+                  "feeds.create",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "analyze.view"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              }
+            ],
+            "requires_content_approval": false
+          }
+        }
+      },
+      {
+        "json": {
+          "id": 125295,
+          "name": "Fyzical Therapy & Balance Center Coral Springs",
+          "type": "linkedin.org",
+          "_type": "LinkedIn Organization",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125295.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=cdce217a55dc79c556dd150ebf3288a007161171624ea47fe21be34463232c52",
+          "post_maxlength": 3000,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "gif",
+            "mp4",
+            "qt",
+            "m4v",
+            "mov",
+            "webp",
+            "ppt",
+            "pptx",
+            "pdf",
+            "doc",
+            "docx"
+          ],
+          "max_attachments": 20,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              256,
+              144
+            ],
+            "max": [
+              4096,
+              2304
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 600
+          },
+          "user_id": 112867,
+          "account_id": "105339840",
+          "public_id": "n5xnw3q0m72orpvy5n4pzyj8dk4g1v9e",
+          "extra_data": {},
+          "team_id": 3361,
+          "approvers": [
+            {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            {
+              "id": 140787,
+              "name": "Husseinadebayo2",
+              "email": "husseinadebayo2@gmail.com",
+              "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp"
+            }
+          ],
+          "team": {
+            "id": 3361,
+            "name": "Automation",
+            "user": {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            "created_at": "2025-06-05 17:26:09",
+            "members": [
+              {
+                "id": 112867,
+                "name": "Ari",
+                "email": "fyzicaltherapycs@gmail.com",
+                "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "team.edit",
+                  "posts.create",
+                  "posts.view",
+                  "posts.edit",
+                  "posts.view_drafts",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.view",
+                  "generated_content.generate",
+                  "analyze.view",
+                  "feeds.create",
+                  "feeds.view",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "inbox.manage",
+                  "inbox.config"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              },
+              {
+                "id": 140787,
+                "name": "Husseinadebayo2",
+                "email": "husseinadebayo2@gmail.com",
+                "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "posts.view_drafts",
+                  "posts.view",
+                  "posts.create",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.generate",
+                  "generated_content.view",
+                  "feeds.create",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "analyze.view"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              }
+            ],
+            "requires_content_approval": false
+          }
+        }
+      },
+      {
+        "json": {
+          "id": 125296,
+          "name": "FYZICAL Therapy & Balance Center Coral Springs - 2234 North University Drive",
+          "type": "google.location",
+          "_type": "Google Business Profile",
+          "active": true,
+          "image": "https://socialbu.nyc3.digitaloceanspaces.com/avatars/125296.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=C25SFMRLFBQD2SIWBCWS%2F20251112%2Fnyc3%2Fs3%2Faws4_request&X-Amz-Date=20251112T140200Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=a03998dbd6a74b1f05f3773f4aa390be985f8350c83813d5e892899f4fa3e67d",
+          "post_maxlength": 1500,
+          "attachment_types": [
+            "jpg",
+            "png",
+            "jpeg",
+            "webp"
+          ],
+          "max_attachments": 1,
+          "post_media_required": false,
+          "video_dimensions": {
+            "min": [
+              1280,
+              720
+            ],
+            "max": [
+              10000,
+              10000
+            ]
+          },
+          "video_duration": {
+            "min": 3,
+            "max": 30
+          },
+          "user_id": 112867,
+          "account_id": "accounts/108733285718640311258/locations/4507948149255906826",
+          "public_id": "g4ovn95z320rw6g5mzdlmx1qj7dkey8g",
+          "extra_data": {},
+          "team_id": 3361,
+          "approvers": [
+            {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            {
+              "id": 140787,
+              "name": "Husseinadebayo2",
+              "email": "husseinadebayo2@gmail.com",
+              "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp"
+            }
+          ],
+          "team": {
+            "id": 3361,
+            "name": "Automation",
+            "user": {
+              "id": 112867,
+              "name": "Ari",
+              "email": "fyzicaltherapycs@gmail.com",
+              "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp"
+            },
+            "created_at": "2025-06-05 17:26:09",
+            "members": [
+              {
+                "id": 112867,
+                "name": "Ari",
+                "email": "fyzicaltherapycs@gmail.com",
+                "image": "https://www.gravatar.com/avatar/cd0952c5c839f4ea218de69c4f10d786.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "team.edit",
+                  "posts.create",
+                  "posts.view",
+                  "posts.edit",
+                  "posts.view_drafts",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.view",
+                  "generated_content.generate",
+                  "analyze.view",
+                  "feeds.create",
+                  "feeds.view",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "inbox.manage",
+                  "inbox.config"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              },
+              {
+                "id": 140787,
+                "name": "Husseinadebayo2",
+                "email": "husseinadebayo2@gmail.com",
+                "image": "https://www.gravatar.com/avatar/ab0d269990e1ff2fa94bc57eedd61ba1.jpg?s=48&d=mp",
+                "approved": true,
+                "permissions": [
+                  "posts.view_drafts",
+                  "posts.view",
+                  "posts.create",
+                  "approvals.approve",
+                  "queues.create",
+                  "queues.edit",
+                  "queues.add_post",
+                  "generated_content.generate",
+                  "generated_content.view",
+                  "feeds.create",
+                  "feeds.edit",
+                  "automation.create",
+                  "automation.edit",
+                  "analyze.view"
+                ],
+                "invited_by": null,
+                "invited_by_name": null
+              }
+            ],
+            "requires_content_approval": false
+          }
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.physicaltherapycoralsprings.com:8443",
+            "user-agent": "axios/1.13.2",
+            "content-length": "7725",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "traceparent": "00-6c24b3c65caaab5206596a6d4e5d7e29-a101a404f6b7b038-01",
+            "via": "1.1 Caddy",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.physicaltherapycoralsprings.com:8443",
+            "x-forwarded-proto": "https",
+            "x-ghl-signature": "YOUR_SHARED_SECRET"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Reason for inquiry": "",
+            "What can we improve upon, or what should we add, to our lecture?": "",
+            "Fax Email Address": "",
+            "Physician Last Name": "",
+            "Billing Address - State": "",
+            "On a scale of 1-10 (10 being the most likely) how likely would you be to recommend your friends and family to FYZICAL Therapy Coral Springs?": "10",
+            "What were your goals coming into Physical Therapy?": "",
+            "How satisfied were you with the communication throughout the towing process? (1-5 scale)": "",
+            "Do you have any additional comments, feedback, or suggestions regarding the legal services market?": "",
+            "utm_source": "",
+            "Patient Photo": "",
+            "Time of Day": "",
+            "On a scale of 1-5, 5 being the highest level of pain, how bad is your pain?": "",
+            "Reserve Your Weekly Spot (Select Day of Week & Time)": "",
+            "Featured Post Link (FB)": "",
+            "Opportunity Source": "",
+            "FEEDBACK": "",
+            "Orientation Date:": "",
+            "Preferred Contact Method": "",
+            "How likely are you to recommend our company to others? (1-5 scale)": "",
+            "Current Date": "",
+            "Featured Post Link (X)": "",
+            "How would you describe FYZICAL HQ's marketing orientation day to someone else?": "",
+            "Physician Phone Number": "",
+            "Free Balance Screening": "",
+            "When did your pain first begin?": "",
+            "Multi Line 16mi1": "",
+            "Physician Email": "",
+            "RATING": "",
+            "Date": "",
+            "Fax": "",
+            "Occupation": "",
+            "Message": "",
+            "t": "",
+            "What was the most rewarding aspect to your recovery?": "Being more active. ",
+            "Reason for Visit": "",
+            "Comments": "",
+            "Featured Post Link (GMB)": "",
+            "I consent for my image and story to be published on any web properties or marketing channels associated with FYZICAL Therapy & Balance Center.": {
+              "url": "https://services.leadconnectorhq.com/documents/download/dTejLeaOekfCfIjmJaUs",
+              "documentId": "dTejLeaOekfCfIjmJaUs",
+              "meta": {
+                "isSignature": true,
+                "mimetype": "image/png",
+                "encoding": "7bit",
+                "timestamp": "1767193809",
+                "uuid": "e91082b1-dd66-404b-8b97-33c572ac9588",
+                "originalname": "sign-timestamp-1767193809.png",
+                "fieldname": "LUHnZusseZsfEygiv7QO",
+                "size": 12366
+              }
+            },
+            "Preferred Method of Contact": "",
+            "Text Preference": "",
+            "Linkedin Profile": "",
+            "TIme": "",
+            "Billing Address - City": "",
+            "Page URL": "",
+            "Graduation Photo With Patient & Staff (If submitted from home, please include a photo that you would like included with your story)": "",
+            "Multi Dropdown 1k57": "",
+            "Featured Post Link (Linkedin)": "",
+            "How did that condition/s impact your life?": "Not mobile enough.",
+            "Rate the visual appeal of your website. (Scale of 1 to 5)": "",
+            "Can you balance on one foot?": "",
+            "Rate the communication with the web designer. (Scale of 1 to 5)": "",
+            " Rate the functionality of your website (e.g., responsiveness, load speed). (Scale of 1 to 5)": "",
+            "What were your goals coming in to Physical Therapy?": "Remove pain from movement. ",
+            "Project Description": "",
+            "Sponsorship": "",
+            "Have you fallen in the last year?": "",
+            "https://forms.zoho.com/fyzicalcoralsprings1/form/PatientSuccessForm/builder": "",
+            "Billing Address - Full Name": "",
+            "Case Type": "",
+            "utm_medium": "",
+            "What brought you in to Physical Therapy to begin with? Is there a story behind your condition/s?": "Shoulder lack of motion. Back pain",
+            "Best time to contact you": "",
+            "Signature": {
+              "meta": {
+                "size": 12777,
+                "encoding": "7bit",
+                "isSignature": true,
+                "uuid": "89666629-41b3-468f-8539-dcd72cd62786",
+                "originalname": "sign-timestamp-1767190040.png",
+                "timestamp": "1767190040",
+                "fieldname": "imgBsaWHlkMwbJvqlYq7",
+                "mimetype": "image/png"
+              },
+              "url": "https://services.leadconnectorhq.com/documents/download/SGbFnjf649YlwVqbEdRF",
+              "documentId": "SGbFnjf649YlwVqbEdRF"
+            },
+            "Business Email": "",
+            "Message1": "",
+            "Questions or Comments": "",
+            "Billing Address - Phone Number": "",
+            "Service Requested": "",
+            "Image upload": "",
+            "Featured Post Link (IG)": "",
+            "Date Requested": "",
+            "Additional Notes": "",
+            "Did the design meet your expectations? ": "",
+            "Billing Address - Zip Code": "",
+            "Contact For Hidden Landing Page Forms": "",
+            "Morning": "",
+            " utm_campaign": "",
+            "Billing Address - Full Address": "",
+            "Dwelling Type": "",
+            "Billing Address - Country": "",
+            "Physician First Name": "",
+            "Insurance Information": "",
+            "Physical Therapy Contact Page URL": "",
+            "Were you able to meet your goals? ": "Yes ",
+            "File Upload 2eey": "",
+            "Tme": "",
+            "Your Message": "",
+            "What is your main concern or goal?": "",
+            " referrer_url": "",
+            "contact_id": "G7VFph8oOIP3DbhGMm1h",
+            "first_name": "James",
+            "last_name": "Sargent",
+            "full_name": "James Sargent",
+            "email": "sargentdave454@gmail.com",
+            "phone": "+14052505477",
+            "tags": "promptpatients",
+            "country": "US",
+            "timezone": "America/New_York",
+            "date_created": "2025-08-25T14:01:53.646Z",
+            "contact_source": "sign in \"sheet\"",
+            "full_address": "",
+            "contact_type": "lead",
+            "location": {
+              "name": "FYZICAL Therapy Coral Springs",
+              "address": "2234 N University Dr. ",
+              "city": "Coral Springs",
+              "state": "FL",
+              "country": "US",
+              "postalCode": "33071",
+              "fullAddress": "2234 N University Dr. , Coral Springs FL 33071",
+              "id": "UppHFLOFzQKdzeIYBvRj"
+            },
+            "workflow": {
+              "id": "711bc2f9-2c26-4f43-8f8d-3a5aaf03f70b",
+              "name": "Patient Success Story: Send/Post With Socialbu"
+            },
+            "triggerData": {},
+            "contact": {
+              "attributionSource": {
+                "sessionSource": "Direct traffic",
+                "url": "https://api.leadconnectorhq.com/widget/form/4UuzpKLlC6uEDdcxAM2R",
+                "campaign": null,
+                "utmSource": null,
+                "utmMedium": null,
+                "utmContent": null,
+                "utmTerm": null,
+                "utmKeyword": null,
+                "utmMatchtype": null,
+                "referrer": null,
+                "gclid": null,
+                "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15",
+                "ip": "2603:3020:2402:fc00:5d53:cbf8:fabc:5c87",
+                "gaClientId": null,
+                "gaSessionId": null,
+                "medium": "form",
+                "mediumId": "4UuzpKLlC6uEDdcxAM2R",
+                "adName": null,
+                "adGroupId": null,
+                "adId": null,
+                "gbraid": null,
+                "wbraid": null
+              },
+              "lastAttributionSource": {
+                "mediumId": "zJrQWREyYV5Mn5thBUI3",
+                "utmTerm": null,
+                "ip": "50.196.75.253",
+                "utmContent": null,
+                "url": "https://apt.fyzical.com/success",
+                "adName": null,
+                "gaClientId": null,
+                "adId": null,
+                "wbraid": null,
+                "gaSessionId": null,
+                "sessionSource": "Direct traffic",
+                "utmSource": null,
+                "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15",
+                "gclid": null,
+                "utmMatchtype": null,
+                "medium": "form",
+                "gbraid": null,
+                "utmMedium": null,
+                "utmKeyword": null,
+                "adGroupId": null,
+                "referrer": null
+              }
+            },
+            "attributionSource": {},
+            "customData": {
+              "text": "**BLOG POST:**\n\nAt FYZICAL Therapy and Balance Center Coral Springs, we celebrate the inspiring journey of James Sargent. Facing challenges with shoulder mobility and persistent back pain, James sought a path to improved health and vitality. The limitations in mobility were a significant hurdle, impacting daily activities and overall well-being.\n\nThrough a dedicated physical therapy program, James focused on alleviating pain associated with movement. The commitment to therapy sessions and exercises tailored to individual needs played a crucial role in this transformative journey. The goal was clear: to remove pain and enhance mobility, allowing for a more active lifestyle.\n\nThe results have been remarkable. James now enjoys increased activity levels, experiencing the freedom that comes with reduced pain and improved motion. This success story underscores the power of personalized physical therapy in overcoming physical challenges and enhancing quality of life.\n\nAt FYZICAL Therapy and Balance Center Coral Springs, we are proud to support patients like James in their pursuit of health and wellness. #PhysicalTherapy #RecoveryJourney #CoralSpringsPT\n\n**X tweet:**\n\nJames Sargent's journey at FYZICAL Coral Springs highlights the power of physical therapy. Overcoming shoulder and back pain, James now enjoys improved mobility and an active lifestyle. A true testament to personalized care. #PhysicalTherapy #CoralSpringsPT",
+              "image": "",
+              "contactId": "G7VFph8oOIP3DbhGMm1h",
+              "fullName": "James Sargent",
+              "email": "sargentdave454@gmail.com",
+              "callback_url": "https://n8n.physicaltherapycoralsprings.com:8443/webhook/socialbu/post"
+            }
+          },
+          "webhookUrl": "https://n8n.physicaltherapycoralsprings.com/webhook/socialbu_post",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "content_body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download_image": {
+      "main": [
+        [
+          {
+            "node": "initiate_upload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "pass_image_binary",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "no_image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "initiate_upload": {
+      "main": [
+        [
+          {
+            "node": "pass_image_binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "upload_img": {
+      "main": [
+        [
+          {
+            "node": "status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "status": {
+      "main": [
+        [
+          {
+            "node": "uploaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "uploaded": {
+      "main": [
+        [
+          {
+            "node": "file_token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "get_accountsIds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_accountsIds": {
+      "main": [
+        []
+      ]
+    },
+    "pass_image_binary": {
+      "main": [
+        [
+          {
+            "node": "upload_img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_link": {
+      "main": [
+        [
+          {
+            "node": "20_secs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sendLink2_GHL": {
+      "main": [
+        []
+      ]
+    },
+    "post_urls": {
+      "main": [
+        [
+          {
+            "node": "sendLink2_GHL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Split_urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_2_X": {
+      "main": [
+        [
+          {
+            "node": "post_status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "download_image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_2_facebook": {
+      "main": [
+        [
+          {
+            "node": "post_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_2_GB": {
+      "main": [
+        [
+          {
+            "node": "post_status6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_2_instagram": {
+      "main": [
+        [
+          {
+            "node": "post_status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_2_linkedIn": {
+      "main": [
+        [
+          {
+            "node": "post_status5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_status1": {
+      "main": [
+        [
+          {
+            "node": "post_url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_status2": {
+      "main": [
+        [
+          {
+            "node": "post_link2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30 secs": {
+      "main": [
+        [
+          {
+            "node": "post_status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_status": {
+      "main": [
+        [
+          {
+            "node": "post_link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_link2": {
+      "main": [
+        [
+          {
+            "node": "20 sec",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_status5": {
+      "main": [
+        [
+          {
+            "node": "post_link5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_link5": {
+      "main": [
+        [
+          {
+            "node": "20_SECS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_status6": {
+      "main": [
+        [
+          {
+            "node": "post_link6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post_link6": {
+      "main": [
+        [
+          {
+            "node": "20=secs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Split_urls": {
+      "main": [
+        [
+          {
+            "node": "post_urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content_body": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "post_url": {
+      "main": [
+        [
+          {
+            "node": "30 secs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "file_token": {
+      "main": [
+        [
+          {
+            "node": "post_2_facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "post_2_linkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "post_2_GB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "post_2_instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "post_2_X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20_secs": {
+      "main": [
+        [
+          {
+            "node": "post_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20 sec": {
+      "main": [
+        [
+          {
+            "node": "post_status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20=secs": {
+      "main": [
+        [
+          {
+            "node": "post_status6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20_SECS": {
+      "main": [
+        [
+          {
+            "node": "post_status5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "V9pHIGPnB6akMcpb",
+    "timeSavedPerExecution": 20
+  },
+  "versionId": "1b1d6031-1636-43c4-85a0-eaa458787261",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc439b95531050978051a24f785c75ab45f8c3843d62b0d7c92029211fe79e73"
+  },
+  "id": "9MI0WkZR3OJ9Cqoy",
+  "tags": []
+}
