@@ -1,0 +1,4701 @@
+{
+  "name": "SMS outreach Twilio",
+  "nodes": [
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        1088
+      ],
+      "id": "f476d968-206d-4726-8b88-d35a6be06a1d",
+      "name": "Send a message1",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        688
+      ],
+      "id": "3bf78c8c-6b60-476c-bbad-3d5c3a39421c",
+      "name": "5 secs1",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "options": {
+          "columnsToWatch": [
+            "Name",
+            "Phone Number",
+            "Day 1 ",
+            "Day 4",
+            "Day 9",
+            "Day 14",
+            "Day 20",
+            "Day 30"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        1712
+      ],
+      "id": "86e45290-cfde-4005-b617-68d60a684c36",
+      "name": "new_leads",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "9BIqdaFrx0KDByns",
+          "name": "hellohusTrigger"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -800,
+        992
+      ],
+      "id": "a1c49c94-657a-47e2-816b-8e44094cfb7d",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "jsCode": "// In the Code Node that calculates days\nreturn items.map(item => {\n  const firstContact = new Date(item.json.First_Contact_Date);\n  firstContact.setHours(0, 0, 0, 0);\n  \n  const today = new Date();\n  today.setHours(0, 0, 0, 0);\n  \n  const daysSince = Math.floor((today - firstContact) / (1000 * 60 * 60 * 24));\n  \n  // CRITICAL: Only send if still active\n  const shouldSend = [1, 4, 9, 14, 20, 30].includes(daysSince) && \n                     item.json.Status === 'active' &&\n                     item.json.Reply_Received !== 'TRUE';\n  \n  return {\n    json: {\n      ...item.json,\n      days_since_first_contact: daysSince,\n      should_send: shouldSend\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1984,
+        2192
+      ],
+      "id": "447646be-47db-4b92-8f3e-ef9ac8987e71",
+      "name": "days_sent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2834e6a5-1b91-4cc0-a023-5ab90ef8ee86",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2208,
+        1712
+      ],
+      "id": "559c934e-8d90-477e-8dad-1e84016f4763",
+      "name": "status"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone Number": "={{ $json['Phone Number'] }}",
+            "Status": "active",
+            "First_Contact_Date": "={{ $now.format('yyyy-MM-dd') }}"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sent",
+              "displayName": "Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sent",
+              "displayName": "Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sent",
+              "displayName": "Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "senrt",
+              "displayName": "senrt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sent ",
+              "displayName": "sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sent",
+              "displayName": "sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_message",
+              "displayName": "Reply_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1984,
+        1712
+      ],
+      "id": "f93f7e23-2fd1-46aa-bbd1-d6fa28e95636",
+      "name": "active",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2432,
+        2192
+      ],
+      "id": "9dc61719-ae08-4070-8b84-2287c6f2d314",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "active"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2208,
+        2192
+      ],
+      "id": "296c4840-f10f-4b0a-b938-f8ccc8eeb056",
+      "name": "get_leads",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": {},
+                    "operator": {
+                      "type": "number",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "01240375-f20d-4dac-b1eb-970bfeda9727"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1e4036e7-5a9b-4a5a-a63d-d317235afcc2",
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": 4,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_4"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7d8104b9-85a1-48c3-ab49-33b361deb8fc",
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": 9,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_9"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0a5c4ada-fd11-4b28-9aab-edabd8e97497",
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": 14,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_14"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d246748d-fd30-4bb9-90b5-4ac3ea8dd228",
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": 20,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_20"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a45ed139-6403-49d4-b757-4f9b85efe4c6",
+                    "leftValue": "={{ $json.days_since_first_contact }}",
+                    "rightValue": 30,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "day_30"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1536,
+        2128
+      ],
+      "id": "be9d9cf7-b23f-40a6-880b-80be52fea9fa",
+      "name": "days"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, it’s Richard, hope you’ve been keeping well. We spoke previously about financial protection and I just wanted to reconnect.  I’m offering a free, no-obligation review to make sure any cover you have still suits your situation. It’s useful, you can book a quick call at a time that works for you here:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        880
+      ],
+      "id": "e6ea331a-aebf-43da-ba86-6dc345620fa0",
+      "name": "send_text",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -352,
+        784
+      ],
+      "id": "7d09e22b-ff21-49e9-9b64-95a2c6e8fe73",
+      "name": "msg_status1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First_Contact_Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "day_1Sent": "sent",
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        1184
+      ],
+      "id": "5929d9d2-e4c2-4ef4-8b92-fde60eac8229",
+      "name": "day1_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        656
+      ],
+      "id": "114f21d2-0e1c-483e-a7a5-9dfb8cd57416",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        992
+      ],
+      "id": "35fbc48e-92b8-4dcf-9096-6131e5914e57",
+      "name": "Wait",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        1152
+      ],
+      "id": "a08a4ffc-15ed-49eb-aed1-9862de79d154",
+      "name": "Send a message",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1904,
+        848
+      ],
+      "id": "2ea73000-9c5c-42cd-a4cf-ab5754f467da",
+      "name": "5 secs",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1680,
+        928
+      ],
+      "id": "fd35416e-deee-4f0a-8fc6-91cfe86bada6",
+      "name": "msg_status"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2128,
+        816
+      ],
+      "id": "e5acb068-5439-44d4-b12b-351846f2c9d8",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2352,
+        928
+      ],
+      "id": "3f5b18af-6b38-4b30-bca3-eb4eaee8e6fa",
+      "name": "Wait1",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        2064
+      ],
+      "id": "35570fc1-11e3-4f1c-835a-65b3e38044d3",
+      "name": "Send a message2",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        1760
+      ],
+      "id": "4838deba-5a6b-4efe-982f-58549fadee05",
+      "name": "5 secs2",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        2016
+      ],
+      "id": "b6e2ed03-cd40-4471-ba00-06abaac342d1",
+      "name": "Loop2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        1856
+      ],
+      "id": "1018a41d-5f76-4b11-9788-76d005e6e6cd",
+      "name": "msg_status2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        1728
+      ],
+      "id": "38f1776f-7f75-4dd1-a570-517fd566e316",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        1872
+      ],
+      "id": "3bd18d89-b749-4561-b2b4-777412abce90",
+      "name": "Wait2",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1904,
+        2288
+      ],
+      "id": "e6ece9c8-fb4b-41e7-898d-dd171b63387a",
+      "name": "Send a message3",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2128,
+        1984
+      ],
+      "id": "df5dcaa7-535f-40b4-b5e7-ac65b0269e61",
+      "name": "5 secs3",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1456,
+        2240
+      ],
+      "id": "86545f91-ca99-4d0c-bad3-24fc13fe5799",
+      "name": "Loop3"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1904,
+        2064
+      ],
+      "id": "b6eca620-0727-4c3c-9d73-90203099e1dd",
+      "name": "msg_status3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2352,
+        1952
+      ],
+      "id": "6fdc2931-e520-44e0-8d81-63e0a26f544f",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2576,
+        2064
+      ],
+      "id": "fae29ccd-aa1f-47ea-b7db-4d08871aab9b",
+      "name": "Wait3",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        3152
+      ],
+      "id": "39315d43-d46d-4d88-9e00-59a60d08b313",
+      "name": "Send a message4",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        2848
+      ],
+      "id": "c599ddda-9997-492e-908c-2085c0027327",
+      "name": "5 secs4",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1072,
+        3104
+      ],
+      "id": "4704a9a8-237e-4125-b375-08dad7281ef2",
+      "name": "Loop4"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -624,
+        2944
+      ],
+      "id": "66d8e871-3868-4043-b0b3-3106eb6ee303",
+      "name": "msg_status4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        2816
+      ],
+      "id": "2145a473-7a49-43d1-be3c-390074ecf221",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        2944
+      ],
+      "id": "3f8970f8-3899-43dd-83ac-023a8106e1eb",
+      "name": "Wait4",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "subject": "Error Twilio node ",
+        "emailType": "text",
+        "message": "The Node encounter limits error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        3168
+      ],
+      "id": "28faba65-d57f-401e-a1ba-3855b92db469",
+      "name": "Send a message5",
+      "webhookId": "b229f3b9-aeab-4120-bddc-9d0d17dfc87b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        2864
+      ],
+      "id": "15c49aa6-5570-4f80-9fe6-070d97351757",
+      "name": "5 secs5",
+      "webhookId": "c25327ba-44b0-436e-979b-092d5d6a1340"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1408,
+        3120
+      ],
+      "id": "44c79c2a-2d67-46e4-848b-e8776ff424bc",
+      "name": "Loop5"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{ $json.account_sid }}/Messages/{{ $json.sid }}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1856,
+        2944
+      ],
+      "id": "161a42d7-e939-43fa-9668-fdaeec50878e",
+      "name": "msg_status5"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd69ac38-1c26-461f-a957-50bb6c5fad5d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b07bcb88-41d0-4df8-8600-c6d4778339a9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "undelivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not_sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "125253a2-edb5-40ac-9356-6cfdd22cedda",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c35388e3-1bb5-4261-9c49-4bab493f0437",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "sending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2304,
+        2832
+      ],
+      "id": "52466ec0-9ec8-4fa2-b3ad-a238c94934f7",
+      "name": "Switch5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2528,
+        2944
+      ],
+      "id": "dd4a6978-3345-4f40-af3f-dd778c7e4395",
+      "name": "Wait5",
+      "webhookId": "f9c5a27f-eb7e-4f51-8027-78e498e7f9f4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        1104
+      ],
+      "id": "e32a69a8-9233-4127-b1cf-13a521d21823",
+      "name": "iterate"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, just closing the loop.  I’ll leave this with you — if you ever want a free, no-obligation review, you can book here anytime:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        3040
+      ],
+      "id": "06466584-d910-49c3-967d-cd51b6d576bc",
+      "name": "send_30day",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, Richard here.  Free protection review — no pressure, just peace of mind. Book anytime here if helpful:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        3040
+      ],
+      "id": "9360fa8d-b022-44f2-b9ea-0d3d5ae36a86",
+      "name": "send_20day",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, hope you’re well. Just to reassure you — these reviews are completely no obligation and often just provide peace of mind that things are set up properly. If you’d like to book one, here’s the link:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2160
+      ],
+      "id": "4b945c8a-9e36-4d28-b63c-94692276da87",
+      "name": "send_14day",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, Richard here 👋 Many people I’ve spoken to in the past are surprised how quickly policies can become out of date when life changes. I’m offering a free, no-obligation review just to make sure everything still works as intended. Book anytime here if useful:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1952
+      ],
+      "id": "4429a7d4-46f7-4714-92c2-b049ca98b7a2",
+      "name": "send_9day",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "from": "+447862122687",
+        "to": "=+44{{ $json['Phone Number'] }}",
+        "message": "=Hi {{ $json.Name.trim().split(\" \")[0] }}, just a quick follow-up. Still happy to offer a free policy check — simply a helpful review if anything’s changed since we last spoke. Here’s the link again in case it helps:\n👉 https://calendly.com/richard-fairweather/protection-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        1024
+      ],
+      "id": "fba9b990-5503-4e75-9c3f-d74eef1b7842",
+      "name": "send_4day",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "Day 4": "sent"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        1200
+      ],
+      "id": "d3960121-71b1-40aa-8276-58f47c20e4d6",
+      "name": "day4_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "day_9Sent": "sent"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        2112
+      ],
+      "id": "bbcad7f6-4ca7-4d9d-9531-ddbca70d1b5f",
+      "name": "day9_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "sday_14ent": "sent"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        2336
+      ],
+      "id": "8ae118e1-37c5-4bb2-88ce-a189ac021d86",
+      "name": "day14_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "day_20sent ": "sent"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        3200
+      ],
+      "id": "dcf4cdca-2067-4fdd-83ad-24fba89838b4",
+      "name": "day20_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Message_Day": "={{ $now.format('yyyy-MM-dd') }}",
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "day_30sent": "sent"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2528,
+        3216
+      ],
+      "id": "17e3092d-4d79-416f-bec3-c23fab52f461",
+      "name": "day30_sent",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_30Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        3120
+      ],
+      "id": "0ed9eb55-9f52-4ffd-9371-6fd00de8ed57",
+      "name": "Day30"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_20Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1296,
+        3104
+      ],
+      "id": "8edbfee3-b6d7-4cb7-a4fb-363942a9951a",
+      "name": "Day20"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_14Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        2240
+      ],
+      "id": "1f2982d0-4531-43a4-abd4-5e5d5a6468c1",
+      "name": "Day14"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_9Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        2112
+      ],
+      "id": "7c4d97f6-bf2f-48df-acba-d6542d9ac984",
+      "name": "Day9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_4Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1008,
+        1104
+      ],
+      "id": "62c4c4b4-59ab-4649-b270-84fcf0fa4918",
+      "name": "Day4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54797663-d671-4fb9-8c41-5e7b4d5c4983",
+              "leftValue": "={{ $json.day_1Sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1024,
+        992
+      ],
+      "id": "b5213181-b57e-411a-b379-824c1c789091",
+      "name": "Day1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE",
+          "mode": "list",
+          "cachedResultName": "Coulsdon fair ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 565619514,
+          "mode": "list",
+          "cachedResultName": "Client message old leads ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xqsI0MiCtpuGFi-frCSeI4Pox_e2xDcOdhKnoF0KBTE/edit#gid=565619514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone Number": "={{ $json.to.replace(/^\\+44/, '') }}",
+            "day_1Sent": "not delivered"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Day 1 ",
+              "displayName": "Day 1 ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_1Sent",
+              "displayName": "day_1Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Day 4",
+              "displayName": "Day 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_4Sent",
+              "displayName": "day_4Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 9",
+              "displayName": "Day 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_9Sent",
+              "displayName": "day_9Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 14",
+              "displayName": "Day 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sday_14ent",
+              "displayName": "sday_14ent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 20",
+              "displayName": "Day 20",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_20sent ",
+              "displayName": "day_20sent ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Day 30",
+              "displayName": "Day 30",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "day_30sent",
+              "displayName": "day_30sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "First_Contact_Date",
+              "displayName": "First_Contact_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last_Message_Day",
+              "displayName": "Last_Message_Day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Received",
+              "displayName": "Reply_Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reply_text",
+              "displayName": "Reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        800
+      ],
+      "id": "6f327312-0737-4b55-ae47-d7cafde0df4f",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "5 secs1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "new_leads": {
+      "main": [
+        [
+          {
+            "node": "status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "days_sent": {
+      "main": [
+        [
+          {
+            "node": "days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "status": {
+      "main": [
+        [
+          {
+            "node": "active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "get_leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_leads": {
+      "main": [
+        [
+          {
+            "node": "days_sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "days": {
+      "main": [
+        [
+          {
+            "node": "Day1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Day4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Day9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Day14",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Day20",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Day30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_text": {
+      "main": [
+        [
+          {
+            "node": "msg_status1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status1": {
+      "main": [
+        [
+          {
+            "node": "5 secs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day1_sent": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "day1_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "day1_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "msg_status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 secs": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status": {
+      "main": [
+        [
+          {
+            "node": "5 secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "day4_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "day4_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "msg_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 secs2": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_9day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status2": {
+      "main": [
+        [
+          {
+            "node": "5 secs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "day9_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "day9_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "msg_status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 secs3": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_14day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status3": {
+      "main": [
+        [
+          {
+            "node": "5 secs3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "day14_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "day14_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "msg_status3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 secs4": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_20day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status4": {
+      "main": [
+        [
+          {
+            "node": "5 secs4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "day20_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "day20_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "msg_status4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 secs5": {
+      "main": [
+        [
+          {
+            "node": "Switch5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_30day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "msg_status5": {
+      "main": [
+        [
+          {
+            "node": "5 secs5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch5": {
+      "main": [
+        [
+          {
+            "node": "day30_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "day30_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "msg_status5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iterate": {
+      "main": [
+        [],
+        [
+          {
+            "node": "send_4day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_30day": {
+      "main": [
+        [
+          {
+            "node": "msg_status5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_20day": {
+      "main": [
+        [
+          {
+            "node": "msg_status4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_14day": {
+      "main": [
+        [
+          {
+            "node": "msg_status3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_9day": {
+      "main": [
+        [
+          {
+            "node": "msg_status2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_4day": {
+      "main": [
+        [
+          {
+            "node": "msg_status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day4_sent": {
+      "main": [
+        [
+          {
+            "node": "iterate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day9_sent": {
+      "main": [
+        [
+          {
+            "node": "Loop2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day14_sent": {
+      "main": [
+        [
+          {
+            "node": "Loop3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day20_sent": {
+      "main": [
+        [
+          {
+            "node": "Loop4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "day30_sent": {
+      "main": [
+        [
+          {
+            "node": "Loop5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day30": {
+      "main": [
+        [
+          {
+            "node": "Loop5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day20": {
+      "main": [
+        [
+          {
+            "node": "Loop4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day14": {
+      "main": [
+        [
+          {
+            "node": "Loop3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day9": {
+      "main": [
+        [
+          {
+            "node": "Loop2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day4": {
+      "main": [
+        [
+          {
+            "node": "iterate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Day1": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b501c377-f0ca-47b2-9008-34f5698c0fd0",
+  "meta": {
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "WGgHsrG6ZCJJbwwO",
+  "tags": [
+    {
+      "updatedAt": "2026-02-01T07:27:25.827Z",
+      "createdAt": "2026-02-01T07:27:25.827Z",
+      "id": "PKpgJrDZWOcaRopr",
+      "name": "Lead Gen"
+    }
+  ]
+}
