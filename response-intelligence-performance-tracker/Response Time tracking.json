@@ -1,0 +1,1894 @@
+{
+  "name": "Response Time tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "unipile_watch-messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -896,
+        96
+      ],
+      "id": "e92af368-8415-4e26-ac2f-b6640801d074",
+      "name": "watch_new messages",
+      "webhookId": "d2f539d2-a6b9-4a7a-8c98-92b44338eafa"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7561a901-9dc2-4457-bdfc-3b800d025722",
+              "leftValue": "={{ $items('search_conversation').first().json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        96
+      ],
+      "id": "bbb0cd51-6060-48d5-9b57-fe4b4ac59a80",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node\n// Payload comes from Webhook node\n\nconst payload = items[0].json.body;\nconst dmId = $input.first().json.body.chat_id\n// ---- Extract required fields ----\nconst senderName = payload.sender?.attendee_name ?? null;\nconst messageText = payload.message ?? null;\nconst accountId = payload.account_id ?? null;\nconst dmTimestamp = payload.timestamp ?? null;\n\n// ---- Validate presence ----\nif (!senderName || !messageText || !dmTimestamp) {\n  throw new Error(\"Missing required LinkedIn DM fields\");\n}\n\n\nreturn [\n  {\n    json: {\n      dm_id: dmId,\n      sender_name: senderName,\n      message_text: messageText,\n      account_id: accountId,\n      dm_timestamp: dmTimestamp\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        96
+      ],
+      "id": "f5dfd3f7-b5b6-45cb-8dda-51d804798abb",
+      "name": "extract_data"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltmpZRzwWZzJ4lv",
+          "mode": "list",
+          "cachedResultName": "Conversations",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/tbltmpZRzwWZzJ4lv"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_dm_time": "={{ $('extract_data').item.json.dm_timestamp }}",
+            "dm_id": "={{ $('extract_data').item.json.dm_id }}",
+            "sender_name": "={{ $('extract_data').item.json.sender_name }}",
+            "account_id": "={{ $('extract_data').item.json.account_id }}",
+            "Assignee": "unassigned",
+            "Status": "pending",
+            "last_dm_time": "={{ $('extract_data').item.json.dm_timestamp }}",
+            "Is_Positive": false,
+            "Outcome": "Pending",
+            "message_count": "=1"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "dm_id",
+              "displayName": "dm_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "ignored",
+                  "value": "ignored"
+                },
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "responded",
+                  "value": "responded"
+                },
+                {
+                  "name": "escalated",
+                  "value": "escalated"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                },
+                {
+                  "name": "Follow-up Sent",
+                  "value": "Follow-up Sent"
+                },
+                {
+                  "name": "Call Booked",
+                  "value": "Call Booked"
+                },
+                {
+                  "name": "Closed (No Interest)",
+                  "value": "Closed (No Interest)"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "message_count",
+              "displayName": "message_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "first_dm_time",
+              "displayName": "first_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_dm_time",
+              "displayName": "last_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "responded_at",
+              "displayName": "responded_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "response_time",
+              "displayName": "response_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "response_time_status",
+              "displayName": "response_time_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is_Positive",
+              "displayName": "Is_Positive",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Dropped",
+              "displayName": "Dropped",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Response_Log",
+              "displayName": "Response_Log",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Message_History",
+              "displayName": "Message_History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance",
+              "displayName": "Assignee_Performance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance 2",
+              "displayName": "Assignee_Performance 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "024e7c3b-5a93-4512-8094-caba9beeabf2",
+      "name": "new_conversation",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltmpZRzwWZzJ4lv",
+          "mode": "list",
+          "cachedResultName": "Conversations",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/tbltmpZRzwWZzJ4lv"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message_count": "={{ $json.message_count + 1 }}",
+            "id": "={{ $items('search_conversation')[0].json.id }}",
+            "last_dm_time": "={{ $json.last_dm_time }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "dm_id",
+              "displayName": "dm_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "ignored",
+                  "value": "ignored"
+                },
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "responded",
+                  "value": "responded"
+                },
+                {
+                  "name": "escalated",
+                  "value": "escalated"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                },
+                {
+                  "name": "Follow-up Sent",
+                  "value": "Follow-up Sent"
+                },
+                {
+                  "name": "Call Booked",
+                  "value": "Call Booked"
+                },
+                {
+                  "name": "Closed (No Interest)",
+                  "value": "Closed (No Interest)"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "message_count",
+              "displayName": "message_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "first_dm_time",
+              "displayName": "first_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_dm_time",
+              "displayName": "last_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "responded_at",
+              "displayName": "responded_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "response_time",
+              "displayName": "response_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "response_time_status",
+              "displayName": "response_time_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is_Positive",
+              "displayName": "Is_Positive",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Dropped",
+              "displayName": "Dropped",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Response_Log",
+              "displayName": "Response_Log",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Message_History",
+              "displayName": "Message_History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance",
+              "displayName": "Assignee_Performance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance 2",
+              "displayName": "Assignee_Performance 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f181463e-7d5f-46a3-a6c9-47d2374b29ae",
+      "name": "conversation_exists",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltmpZRzwWZzJ4lv",
+          "mode": "list",
+          "cachedResultName": "Conversations",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/tbltmpZRzwWZzJ4lv"
+        },
+        "filterByFormula": "=AND(\n  {dm_id} = \"{{ $json.dm_id }}\"\n)",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        96
+      ],
+      "id": "152c7c28-e45e-4909-b2ea-5796e8cb3b9d",
+      "name": "search_conversation",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52bf24ed-a3d6-4e03-8cab-696d00abcdcc",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b0eaaebc-3c32-4946-86db-9f496a93ca13",
+              "name": "dm_id",
+              "value": "={{ $json.fields.dm_id }}",
+              "type": "string"
+            },
+            {
+              "id": "89ac846c-0689-4cd1-a6be-1c509b8bddb5",
+              "name": "sender_name",
+              "value": "={{ $json.fields.sender_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4141613b-ce37-4462-a3c7-e1c739c891d2",
+              "name": "Assignee",
+              "value": "={{ $json.fields.Assignee }}",
+              "type": "string"
+            },
+            {
+              "id": "508176f2-d98a-4f75-b37a-ed6c67b00614",
+              "name": "account_id",
+              "value": "={{ $json.fields.account_id }}",
+              "type": "string"
+            },
+            {
+              "id": "28f8c26c-b6c6-4b7e-829e-9df3a57b8604",
+              "name": "first_dm_time",
+              "value": "={{ $json.fields.first_dm_time }}",
+              "type": "string"
+            },
+            {
+              "id": "5eca2258-e9ab-466e-9983-a451748410a4",
+              "name": "message_text",
+              "value": "={{ $('extract_data').item.json.message_text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        96
+      ],
+      "id": "04782731-b00a-42d6-9cfc-015573d1be9f",
+      "name": "SET_NODE"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltmpZRzwWZzJ4lv",
+          "mode": "list",
+          "cachedResultName": "Conversations",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/tbltmpZRzwWZzJ4lv"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "response_time": "={{ $json.response_time }}",
+            "responded_at": "={{ $json.responded_at }}",
+            "Status": "={{ $json.action }}",
+            "Assignee": "={{ $json.assignee }}",
+            "last_dm_time": "={{ $json.responded_at }}",
+            "Outcome": "Follow-up Sent",
+            "dm_id": "={{ $json.dm_id }}"
+          },
+          "matchingColumns": [
+            "dm_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "dm_id",
+              "displayName": "dm_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "ignored",
+                  "value": "ignored"
+                },
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "responded",
+                  "value": "responded"
+                },
+                {
+                  "name": "escalated",
+                  "value": "escalated"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                },
+                {
+                  "name": "Follow-up Sent",
+                  "value": "Follow-up Sent"
+                },
+                {
+                  "name": "Call Booked",
+                  "value": "Call Booked"
+                },
+                {
+                  "name": "Closed (No Interest)",
+                  "value": "Closed (No Interest)"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "message_count",
+              "displayName": "message_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_dm_time",
+              "displayName": "first_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_dm_time",
+              "displayName": "last_dm_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "responded_at",
+              "displayName": "responded_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "response_time",
+              "displayName": "response_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "response_time_status",
+              "displayName": "response_time_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is_Positive",
+              "displayName": "Is_Positive",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Dropped",
+              "displayName": "Dropped",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Response_Log",
+              "displayName": "Response_Log",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Message_History",
+              "displayName": "Message_History",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance",
+              "displayName": "Assignee_Performance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance 2",
+              "displayName": "Assignee_Performance 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        416
+      ],
+      "id": "f118b790-9e72-4534-badd-87e757e00f9f",
+      "name": "Update_Conversation",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "Response_Log",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/***REMOVED***"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dm_id": "={{ $('Update_Conversation').item.json.fields.dm_id }}",
+            "action_type": "={{ $('Update_Conversation').item.json.fields.Status }}",
+            "response_time": "={{ $('Update_Conversation').item.json.fields.response_time }}",
+            "timestamp": "={{ $('Update_Conversation').item.json.fields.responded_at }}",
+            "Assignee": "={{ $json.fields.Assignee }}",
+            "Assignee_link": "={{ [$json.id] }}"
+          },
+          "matchingColumns": [
+            "id",
+            "log_id"
+          ],
+          "schema": [
+            {
+              "id": "log_id",
+              "displayName": "log_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "dm_id",
+              "displayName": "dm_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "action_type",
+              "displayName": "action_type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "response_time",
+              "displayName": "response_time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "response_time_friendly",
+              "displayName": "response_time_friendly",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is_Under_10_Min",
+              "displayName": "Is_Under_10_Min",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is_Over_20_Min",
+              "displayName": "Is_Over_20_Min",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee_link",
+              "displayName": "Assignee_link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Conversation",
+              "displayName": "Conversation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "dm_id (from Conversation)",
+              "displayName": "dm_id (from Conversation)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        416
+      ],
+      "id": "ee9b7092-bb23-4a57-bc78-007c5c815e5e",
+      "name": "log_response",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A8JL3AHQC",
+          "mode": "list",
+          "cachedResultName": "automation-project"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n  \"blocks\": [\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"📩 *New LinkedIn DM*\\n*Sender:* {{ $('SET_NODE').item.json.sender_name }}\\n*Account:* {{ $('SET_NODE').item.json.account_id }}\\n*first_dm_time:* {{ $('SET_NODE').item.json.first_dm_time }}\\n\\n> {{ $('SET_NODE').item.json.message_text.substring(0, 100) }}\"\n      }\n    },\n    {\n      \"type\": \"actions\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"💬 Reply via Slack\", \"emoji\": true },\n          \"style\": \"primary\",\n          \"action_id\": \"dm_open_reply_modal\",\n          \"value\": \"{\\\"dm_id\\\":\\\"{{ $('SET_NODE').item.json.dm_id }}\\\",\\\"record_id\\\":\\\"{{ $json.id }}\\\"}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Responded\" },\n          \"action_id\": \"dm_responded\",\n          \"value\": \"{\\\"dm_id\\\":\\\"{{ $('SET_NODE').item.json.dm_id }}\\\",\\\"record_id\\\":\\\"{{ $json.id }}\\\"}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Ignored\" },\n          \"style\": \"danger\",\n          \"action_id\": \"dm_ignored\",\n          \"value\": \"{\\\"dm_id\\\":\\\"{{ $('SET_NODE').item.json.dm_id }}\\\",\\\"record_id\\\":\\\"{{ $json.id }}\\\"}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": { \"type\": \"plain_text\", \"text\": \"Escalated\" },\n          \"action_id\": \"dm_escalated\",\n          \"value\": \"{\\\"dm_id\\\":\\\"{{ $('SET_NODE').item.json.dm_id }}\\\",\\\"record_id\\\":\\\"{{ $json.id }}\\\"}\"\n        }\n      ]\n    }\n  ]\n}",
+        "text": "=New LinkedIn DM",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        96
+      ],
+      "id": "3102f303-f1e8-4a4b-af20-8805bd06811b",
+      "name": "notify_team",
+      "webhookId": "ccd1197e-1d5e-4362-a282-24312e9c339b",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst payload = JSON.parse(body.payload);\nconst messageBlocks = payload.message.blocks;\nconst sectionText = messageBlocks[0].text.text;\n\n// 1. Extract first_dm_time from the message text\nconst timeRegex = /\\*first_dm_time:\\*\\s*([^\\n]+)/;\nconst timeMatch = sectionText.match(timeRegex);\nconst firstDmTime = timeMatch ? timeMatch[1].trim() : null;\n\n// 2. Parse custom button values (dm_id and record_id)\nconst buttonValue = JSON.parse(payload.actions[0].value);\n\n// 3. Calculate Response Time in Minutes\nconst start = new Date(firstDmTime);\nconst end = new Date(); // This is the current \"responded_at\" time\nconst diffMs = end - start;\nconst diffMins = Math.round(diffMs / 60000);\n\n// 4. Extract and clean the action name (dm_responded -> responded)\nconst rawAction = payload.actions[0].action_id;\nconst actionText = rawAction.replace('dm_', '');\n\nreturn {\n  trigger_id: payload.trigger_id,\n  dm_id: buttonValue.dm_id,\n  record_id: buttonValue.record_id,\n  action: actionText,\n  assignee: payload.user.name,\n  first_dm_time: firstDmTime,\n  responded_at: end.toISOString(), // The requested field\n  response_time: diffMins,\n  response_url: payload.response_url,\n  thread_ts: payload.container.message_ts // Required for thread reply\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        512
+      ],
+      "id": "2b13105f-b7d0-4302-b84c-94809748bff1",
+      "name": "calc. response_time"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('calc. response_time').item.json.response_url }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=✅ Marked as {{ $json.fields.action_type }} by {{ $json.fields.Assignee }} - Response time: {{ $json.fields.response_time }} minutes"
+            },
+            {
+              "name": "replace_original",
+              "value": "false"
+            },
+            {
+              "name": "thread_ts",
+              "value": "={{ $('calc. response_time').item.json.thread_ts }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        416
+      ],
+      "id": "b69b7644-6dfd-47be-a109-ab9a5a2289c5",
+      "name": "confirm_reply"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "221e3f08-01e7-4fea-9ff2-defc971cd889",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "open_reply_modal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "other_actions"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "927bd2a6-7c3c-4f0b-a2c0-a4547bf9c1ab",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "=open_reply_modal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reply"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        512
+      ],
+      "id": "e8a9d6e9-d00e-4e47-8ce8-9453d86097ce",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "notify",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -896,
+        512
+      ],
+      "id": "3d62f517-3d9d-4e72-95dc-cb06bbbc2152",
+      "name": "actions",
+      "webhookId": "9812cab0-d6e5-4185-aca4-898a10299784"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/views.open",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED***"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"token\": \"***REMOVED***\",\n  \"trigger_id\": \"{{ $json.trigger_id }}\",\n  \"view\": {\n    \"type\": \"modal\",\n    \"callback_id\": \"linkedin_reply_modal\",\n    \"title\": { \"type\": \"plain_text\", \"text\": \"LinkedIn Reply\" },\n    \"blocks\": [\n      {\n        \"type\": \"input\",\n        \"block_id\": \"reply_block\",\n        \"element\": {\n          \"type\": \"plain_text_input\",\n          \"action_id\": \"reply_input\",\n          \"multiline\": true\n        },\n        \"label\": { \"type\": \"plain_text\", \"text\": \"Your Message\" }\n      }\n    ],\n    \"submit\": { \"type\": \"plain_text\", \"text\": \"Send Message\" }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -224,
+        608
+      ],
+      "id": "ca049091-3ed8-4b33-8e8b-278a30855914",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "***REMOVED***",
+          "mode": "list",
+          "cachedResultName": "linkedIn + n8n",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbldvk2zP5CmdxilI",
+          "mode": "list",
+          "cachedResultName": "Message_History",
+          "cachedResultUrl": "https://airtable.com/***REMOVED***/tbldvk2zP5CmdxilI"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Direction": "={{ $('watch_new messages').item.json.body.event === 'message_received' ? 'inbound' : 'outbound' }}",
+            "timestamp": "={{ $('watch_new messages').item.json.body.timestamp }}",
+            "Conversation_Link": "={{ [$node[\"SET_NODE\"].json.id] }}",
+            "message_text": "={{ $node[\"SET_NODE\"].json.message_text }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "msg_id",
+              "displayName": "msg_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Direction",
+              "displayName": "Direction",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "inbound",
+                  "value": "inbound"
+                },
+                {
+                  "name": "outbound",
+                  "value": "outbound"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Positive",
+                  "value": "Positive"
+                },
+                {
+                  "name": "Negative",
+                  "value": "Negative"
+                },
+                {
+                  "name": "Neutral",
+                  "value": "Neutral"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Conversation_Link",
+              "displayName": "Conversation_Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dm_id (from Conversation_Link)",
+              "displayName": "dm_id (from Conversation_Link)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Assignee_Performance",
+              "displayName": "Assignee_Performance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        96
+      ],
+      "id": "aa3cb55d-d4f9-4e0d-9ce6-bcb5b238574e",
+      "name": "log_inbound",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "2GvTZOl5SdkdmFQm",
+          "name": "helloHussein"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {
+    "watch_new messages": [
+      {
+        "json": {
+          "headers": {
+            "host": "kgdigital.app.n8n.cloud",
+            "user-agent": "axios/1.7.7",
+            "content-length": "2006",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "51.159.110.156",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "FR",
+            "cf-ray": "9c07bfd815372a47-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "51.159.110.156, 172.71.122.45",
+            "x-forwarded-host": "kgdigital.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-23-54c976d6d9-rzqkp",
+            "x-is-trusted": "yes",
+            "x-real-ip": "51.159.110.156"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "message_received",
+            "account_id": "STjLSZAnQeyM_kVlDPdTDg",
+            "account_type": "LINKEDIN",
+            "account_info": {
+              "type": "LINKEDIN",
+              "feature": "classic",
+              "user_id": "ACoAAB6F_NUBIEY9RWVDQmz_WnV1RUkXgVbn5l0"
+            },
+            "webhook_name": "n8n_KG_linkedIn",
+            "chat_id": "PacS34uUUXCsawy7YrbzFg",
+            "attendees": [
+              {
+                "attendee_id": "A8yi4ypYV6G3hfhtLsuXAQ",
+                "attendee_provider_id": "ACoAACMo9x0BquLF6rtTVIe-EbICJTCwk4JpXfE",
+                "attendee_name": "Ogechi Onuoha",
+                "attendee_profile_url": "https://www.linkedin.com/in/ACoAACMo9x0BquLF6rtTVIe-EbICJTCwk4JpXfE",
+                "attendee_specifics": {
+                  "provider": "LINKEDIN",
+                  "member_urn": "urn:li:member:589887261",
+                  "occupation": "Director of Operations | Scaling B2B SMEs: Eliminating Operational Chaos w/ Systems & Content Strategy | Founder: Sustainable Fashion & Haircare | Advocate: Girls in STEM Leadership (Uru Di Ya)",
+                  "is_company": false,
+                  "network_distance": "DISTANCE_3"
+                },
+                "attendee_public_identifier": null
+              }
+            ],
+            "sender": {
+              "attendee_id": "A8yi4ypYV6G3hfhtLsuXAQ",
+              "attendee_provider_id": "ACoAACMo9x0BquLF6rtTVIe-EbICJTCwk4JpXfE",
+              "attendee_name": "Ogechi Onuoha",
+              "attendee_profile_url": "https://www.linkedin.com/in/ACoAACMo9x0BquLF6rtTVIe-EbICJTCwk4JpXfE",
+              "attendee_specifics": {
+                "provider": "LINKEDIN",
+                "member_urn": "urn:li:member:589887261",
+                "occupation": "Director of Operations | Scaling B2B SMEs: Eliminating Operational Chaos w/ Systems & Content Strategy | Founder: Sustainable Fashion & Haircare | Advocate: Girls in STEM Leadership (Uru Di Ya)",
+                "is_company": false,
+                "network_distance": "DISTANCE_3"
+              },
+              "attendee_public_identifier": null
+            },
+            "subject": null,
+            "message": "Hi Kam",
+            "message_id": "DRqcO1XIWguJPkHqQJ9Csw",
+            "timestamp": "2026-01-19T16:36:08.197Z",
+            "attachments": [],
+            "is_sender": false,
+            "provider_chat_id": "2-MGIwNDhkYWQtZjZiYi00YTFmLWJjZDEtM2MxMjNmZDMxYzQ1XzEwMA==",
+            "provider_message_id": "2-MTc2ODg0MDU2ODE5N2I1OTAzNy0xMDAmMGIwNDhkYWQtZjZiYi00YTFmLWJjZDEtM2MxMjNmZDMxYzQ1XzEwMA==",
+            "is_event": 0,
+            "chat_pinned": 0,
+            "quoted": null,
+            "chat_content_type": "inmail",
+            "message_type": "INMAIL",
+            "is_group": false,
+            "folder": [
+              "INBOX",
+              "INBOX_LINKEDIN_CLASSIC"
+            ]
+          },
+          "webhookUrl": "https://kgdigital.app.n8n.cloud/webhook/unipile_watch-messages",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "actions": [
+      {
+        "json": {
+          "headers": {
+            "host": "kgdigital.app.n8n.cloud",
+            "user-agent": "Slackbot 1.0 (+https://api.slack.com/robots)",
+            "content-length": "3488",
+            "accept": "application/json,*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "52.206.76.1",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c09460145e15860-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/x-www-form-urlencoded",
+            "x-forwarded-for": "52.206.76.1, 172.70.135.168",
+            "x-forwarded-host": "kgdigital.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-23-54c976d6d9-hggnc",
+            "x-is-trusted": "yes",
+            "x-real-ip": "52.206.76.1",
+            "x-slack-request-timestamp": "1768856550",
+            "x-slack-signature": "v0=af361f2fbc391aa852a1f9abbec547b28c3b6086cecbfb483814e5d78aea5075"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "payload": "{\"type\":\"block_actions\",\"user\":{\"id\":\"U0A8JL30CUC\",\"username\":\"hellohusseinadebayo\",\"name\":\"hellohusseinadebayo\",\"team_id\":\"T02SQS1JF45\"},\"api_app_id\":\"A0A8D91HL6S\",\"token\":\"56bu511DB2yGEo2z6jovII1J\",\"container\":{\"type\":\"message\",\"message_ts\":\"1768856125.156369\",\"channel_id\":\"C0A8JL3AHQC\",\"is_ephemeral\":false},\"trigger_id\":\"10328848943954.2908885627141.19ac15422e03601f144e5858a6c502f7\",\"team\":{\"id\":\"T02SQS1JF45\",\"domain\":\"kg-digital-workspace\"},\"enterprise\":null,\"is_enterprise_install\":false,\"channel\":{\"id\":\"C0A8JL3AHQC\",\"name\":\"privategroup\"},\"message\":{\"user\":\"U0A8L0PLGQM\",\"type\":\"message\",\"ts\":\"1768856125.156369\",\"bot_id\":\"B0A8PD5BK3L\",\"app_id\":\"A0A8D91HL6S\",\"text\":\"New LinkedIn DM\",\"team\":\"T02SQS1JF45\",\"blocks\":[{\"type\":\"section\",\"block_id\":\"JFiy+\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":envelope_with_arrow: *New LinkedIn DM*\\n*Sender:* Ogechi Onuoha\\n*Account:* STjLSZAnQeyM_kVlDPdTDg\\n*first_dm_time:* 2026-01-19T16:36:08.197Z\\n\\n&gt; Hi Kam\",\"verbatim\":false}},{\"type\":\"actions\",\"block_id\":\"tQ4pK\",\"elements\":[{\"type\":\"button\",\"action_id\":\"dm_open_reply_modal\",\"text\":{\"type\":\"plain_text\",\"text\":\":speech_balloon: Reply via Slack\",\"emoji\":true},\"style\":\"primary\",\"value\":\"{\\\"dm_id\\\":\\\"PacS34uUUXCsawy7YrbzFg\\\",\\\"record_id\\\":\\\"recrC2Mr8SaQPutpu\\\"}\"},{\"type\":\"button\",\"action_id\":\"dm_responded\",\"text\":{\"type\":\"plain_text\",\"text\":\"Responded\",\"emoji\":true},\"value\":\"{\\\"dm_id\\\":\\\"PacS34uUUXCsawy7YrbzFg\\\",\\\"record_id\\\":\\\"recrC2Mr8SaQPutpu\\\"}\"},{\"type\":\"button\",\"action_id\":\"dm_ignored\",\"text\":{\"type\":\"plain_text\",\"text\":\"Ignored\",\"emoji\":true},\"style\":\"danger\",\"value\":\"{\\\"dm_id\\\":\\\"PacS34uUUXCsawy7YrbzFg\\\",\\\"record_id\\\":\\\"recrC2Mr8SaQPutpu\\\"}\"},{\"type\":\"button\",\"action_id\":\"dm_escalated\",\"text\":{\"type\":\"plain_text\",\"text\":\"Escalated\",\"emoji\":true},\"value\":\"{\\\"dm_id\\\":\\\"PacS34uUUXCsawy7YrbzFg\\\",\\\"record_id\\\":\\\"recrC2Mr8SaQPutpu\\\"}\"}]}]},\"state\":{\"values\":{}},\"response_url\":\"https:\\/\\/hooks.slack.com\\/actions\\/T02SQS1JF45\\/10325428229733\\/lKXrUGfTNZKqgXk7UEyjDDYl\",\"actions\":[{\"action_id\":\"dm_responded\",\"block_id\":\"tQ4pK\",\"text\":{\"type\":\"plain_text\",\"text\":\"Responded\",\"emoji\":true},\"value\":\"{\\\"dm_id\\\":\\\"PacS34uUUXCsawy7YrbzFg\\\",\\\"record_id\\\":\\\"recrC2Mr8SaQPutpu\\\"}\",\"type\":\"button\",\"action_ts\":\"1768856550.474257\"}]}"
+          },
+          "webhookUrl": "https://kgdigital.app.n8n.cloud/webhook/notify",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "watch_new messages": {
+      "main": [
+        [
+          {
+            "node": "extract_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "conversation_exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "new_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract_data": {
+      "main": [
+        [
+          {
+            "node": "search_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "new_conversation": {
+      "main": [
+        [
+          {
+            "node": "SET_NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversation_exists": {
+      "main": [
+        [
+          {
+            "node": "SET_NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_conversation": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_NODE": {
+      "main": [
+        [
+          {
+            "node": "log_inbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_Conversation": {
+      "main": [
+        [
+          {
+            "node": "log_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "log_response": {
+      "main": [
+        [
+          {
+            "node": "confirm_reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calc. response_time": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update_Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "actions": {
+      "main": [
+        [
+          {
+            "node": "calc. response_time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "log_inbound": {
+      "main": [
+        [
+          {
+            "node": "notify_team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "06df2777-c461-4fbf-9449-253dccc5381a",
+  "meta": {
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "R5Qey1M7ZFm_vvHX6avaE",
+  "tags": []
+}
