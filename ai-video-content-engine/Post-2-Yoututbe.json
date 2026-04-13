@@ -1,0 +1,569 @@
+{
+  "name": "Post-2-Yoututbe",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.body.video_url }}",
+        "options": {}
+      },
+      "id": "48e1d1d6-88c0-4ca6-80e7-ba33ebea9680",
+      "name": "Download Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -672,
+        4160
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Clean Title').first().json.body.source_file }}",
+        "regionCode": "NG",
+        "categoryId": "19",
+        "options": {
+          "privacyStatus": "unlisted"
+        }
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        4128
+      ],
+      "id": "53e47c10-5696-42e4-bd55-1c4900c0441f",
+      "name": "Upload a video",
+      "alwaysOutputData": false,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "gLrZrpPDuwOILXHv",
+          "name": "Hussein_account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "10MO5hAUIEahLSdDnfk55JgYJ0buNL3Kg6JhDmYC5RuI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "HeyGen Jobs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $('Webhook').first().json.body.video_id }}",
+            "source_file": "={{ $('Merge').first().json.body.source_file }}",
+            "status": "Success",
+            "video_url": "={{ $('Webhook').first().json.body.video_url }}",
+            "row_number": "={{ $('Webhook').first().json.body.row_number }}",
+            "timestamp": "={{ $now.toISODate() }} {{ $now.format('HH:mm') }}",
+            "youtube- video_id": "={{ $json.uploadId }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_file",
+              "displayName": "source_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube- video_id",
+              "displayName": "youtube- video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "36ae7502-0ed9-42f6-872d-750434bbe6b6",
+      "name": "Update_Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.1,
+      "position": [
+        2288,
+        4112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "503dfa47-98a8-432a-835d-c530ff204d83",
+              "name": "body.source_file",
+              "value": "={{ $json.body.source_file }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        3856
+      ],
+      "id": "f5f55ab3-1eba-4abf-a89f-d0b03883672c",
+      "name": "Clean Title"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "heygen-webhook",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1600,
+        4160
+      ],
+      "id": "7bf62e8a-7106-41dc-8ec1-e5947aedd792",
+      "name": "Webhook",
+      "webhookId": "2cf325c7-5c8d-406b-809c-bd086acfbfe2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bZ4OhCnE1KkHOU0W",
+          "name": "Max HeyGen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        4128
+      ],
+      "id": "4a94e008-481a-40d9-8ab5-ff8f33fe2e67",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "# 🌐 Webhook – Receive Completed Video Notification\n## This node listens for an incoming POST request from the HeyGen workflow signalling that a video is ready.\n\nIn simple words:\n- Listens at the `/webhook/heygen-webhook` endpoint for POST requests\n- Receives the `video_url`, `source_file`, `video_id`, and `row_number` in the request body\n- Uses header authentication to verify the request is legitimate\n- Acts as the entry point — nothing in this workflow runs until this fires\n\n### 👉 In short:\n### This node is the starting gun — it catches the signal from the HeyGen pipeline that a finished video is ready to be uploaded.",
+        "height": 712,
+        "width": 540,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        3648
+      ],
+      "id": "e4357051-9d59-43d4-be0f-30d0f4810c22",
+      "name": "Sticky Note – Webhook"
+    },
+    {
+      "parameters": {
+        "content": "# 📥 Download Video – Fetch the MP4 from HeyGen\n## This node downloads the finished video file from the HeyGen storage URL.\n\nIn simple words:\n- Takes the `video_url` from the webhook body\n- Sends a GET request to download the raw MP4 binary\n- Passes the binary file forward for YouTube upload\n- Also fans out simultaneously to the Clean Title node to prepare metadata\n- If the download fails, the error output continues rather than stopping the workflow\n\n### 👉 In short:\n### This node fetches the finished HeyGen video so it can be uploaded to YouTube.",
+        "height": 536,
+        "width": 520,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        4304
+      ],
+      "id": "0cc54901-c2e1-41a4-9bb9-712a72f7bc5a",
+      "name": "Sticky Note – Download Video"
+    },
+    {
+      "parameters": {
+        "content": "# ✏️ Clean Title – Extract and Isolate the Source File Name\n## This node pulls out the source file name and stores it cleanly for use as the YouTube video title.\n\nIn simple words:\n- Reads the `source_file` value from the webhook body (e.g. `content.md`)\n- Stores it in a clean `body.source_file` field\n- Removes any extra noise from the full webhook payload\n- Passes this tidy value into the Merge node so the upload step can use it as the video title\n\n### 👉 In short:\n### This node isolates the source file name so it can be used cleanly as the YouTube video title.",
+        "height": 592,
+        "width": 568,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        3392
+      ],
+      "id": "a98c3ab2-b661-47fe-8597-42f0efdd4bf4",
+      "name": "Sticky Note – Clean Title"
+    },
+    {
+      "parameters": {
+        "content": "# 🔀 Merge – Combine Video Binary and Title Metadata\n## This node waits for both the downloaded video and the cleaned title, then combines them into one data package.\n\nIn simple words:\n- Receives the cleaned title from the Clean Title node on input 0\n- Receives the downloaded video binary from the Download Video node on input 1\n- Combines all fields together using the \"combine all\" strategy\n- Ensures the Upload node has both the video file and the correct title available at the same time\n\n### 👉 In short:\n### This node joins the video file and its metadata together so the YouTube upload step has everything it needs in one place.",
+        "height": 520,
+        "width": 540,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        4288
+      ],
+      "id": "c52e1977-5aae-45a0-b02d-239604fb8318",
+      "name": "Sticky Note – Merge"
+    },
+    {
+      "parameters": {
+        "content": "# 📤 Upload a Video – Publish to YouTube\n## This node uploads the downloaded video to YouTube as an unlisted video.\n\nIn simple words:\n- Uploads the MP4 binary to YouTube via the YouTube API\n- Sets the video title to the source file name from the Clean Title node\n- Assigns category ID 19 (Travel & Events) and region code NG\n- Sets the privacy status to `unlisted` so it is not publicly listed\n- Returns a YouTube `uploadId` (the video ID on YouTube) used for tracking\n\n### 👉 In short:\n### This node publishes the finished HeyGen video to YouTube as an unlisted upload and returns its YouTube video ID.",
+        "height": 680,
+        "width": 540,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        3600
+      ],
+      "id": "d857e3d6-a64d-4eb6-869b-fe1dfeb27bc4",
+      "name": "Sticky Note – Upload a video"
+    },
+    {
+      "parameters": {
+        "content": "# 💾 Update_Sheet – Write YouTube ID Back to the Tracking Sheet\n## This node updates the existing HeyGen Jobs row in Google Sheets with the YouTube upload result.\n\nIn simple words:\n- Finds the correct row using `row_number` as the matching key\n- Updates the row with the YouTube video ID, final status set to `Success`, and a new timestamp\n- Also writes back the `video_url`, `video_id`, and `source_file` to keep the record complete\n- Closes the loop — the job is now fully tracked from article to published video\n\n### 👉 In short:\n### This node updates the tracking spreadsheet with the YouTube video ID and marks the job as successfully completed.",
+        "height": 584,
+        "width": 540,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        3872
+      ],
+      "id": "bc9ac915-5048-4dca-b175-ee1bb4c75932",
+      "name": "Sticky Note – Update_Sheet"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "connection": "upgrade",
+            "host": "dallham.cloud",
+            "content-length": "658",
+            "x-forwarded-for": "18.197.144.231, 162.158.86.254",
+            "x-forwarded-proto": "http",
+            "x-forwarded-port": "80",
+            "x-amzn-trace-id": "Root=1-69a2a017-5f5f8c80168076c310c8a9b0",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "accept-encoding": "gzip, br",
+            "user-agent": "axios/1.12.0",
+            "cf-ray": "9d4e6031ad10995d-FRA",
+            "x-api-key": "sk_V2_hgu_kLnEpmpdMcL_fAg4VRGkM6caSBNMNu01El2Y94gPPypT",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "18.197.144.231",
+            "cf-ipcountry": "DE",
+            "cf-visitor": "{\"scheme\":\"https\"}"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "source_file": "content.md",
+            "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+            "row_number": "3"
+          },
+          "webhookUrl": "https://dallham.cloud/webhook/heygen-webhook",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Upload a video": [
+      {
+        "json": {
+          "uploadId": "gES09hBnkBE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Merge": [
+      {
+        "json": {
+          "body": {
+            "source_file": "content.md",
+            "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+            "row_number": "3"
+          },
+          "headers": {
+            "connection": "upgrade",
+            "host": "dallham.cloud",
+            "content-length": "658",
+            "x-forwarded-for": "18.197.144.231, 162.158.86.254",
+            "x-forwarded-proto": "http",
+            "x-forwarded-port": "80",
+            "x-amzn-trace-id": "Root=1-69a2a017-5f5f8c80168076c310c8a9b0",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "accept-encoding": "gzip, br",
+            "user-agent": "axios/1.12.0",
+            "cf-ray": "9d4e6031ad10995d-FRA",
+            "x-api-key": "sk_V2_hgu_kLnEpmpdMcL_fAg4VRGkM6caSBNMNu01El2Y94gPPypT",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "18.197.144.231",
+            "cf-ipcountry": "DE",
+            "cf-visitor": "{\"scheme\":\"https\"}"
+          },
+          "params": {},
+          "query": {},
+          "webhookUrl": "https://dallham.cloud/webhook/heygen-webhook",
+          "executionMode": "production"
+        },
+        "binary": {
+          "data": {
+            "mimeType": "video/mp4",
+            "fileType": "video",
+            "fileExtension": "mp4",
+            "data": "filesystem-v2",
+            "directory": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "fileName": "267fcfc74c994d9c893864ed5d3043a1.mp4",
+            "id": "filesystem-v2:workflows/6Dzv7hyNxdFAJtBg/executions/29157/binary_data/9aa67128-bfd9-4e0c-b04a-c9cfbf1bf54e",
+            "fileSize": "54.9 MB",
+            "bytes": 54859958
+          }
+        },
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 0,
+            "input": 1
+          }
+        ]
+      }
+    ],
+    "Clean Title": [
+      {
+        "json": {
+          "body": {
+            "source_file": "content.md"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Download Video": [
+      {
+        "json": {
+          "headers": {
+            "connection": "upgrade",
+            "host": "dallham.cloud",
+            "content-length": "658",
+            "x-forwarded-for": "18.197.144.231, 162.158.86.254",
+            "x-forwarded-proto": "http",
+            "x-forwarded-port": "80",
+            "x-amzn-trace-id": "Root=1-69a2a017-5f5f8c80168076c310c8a9b0",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "content-type": "application/json",
+            "accept-encoding": "gzip, br",
+            "user-agent": "axios/1.12.0",
+            "cf-ray": "9d4e6031ad10995d-FRA",
+            "x-api-key": "sk_V2_hgu_kLnEpmpdMcL_fAg4VRGkM6caSBNMNu01El2Y94gPPypT",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "18.197.144.231",
+            "cf-ipcountry": "DE",
+            "cf-visitor": "{\"scheme\":\"https\"}"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "source_file": "content.md",
+            "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+            "row_number": "3"
+          },
+          "webhookUrl": "https://dallham.cloud/webhook/heygen-webhook",
+          "executionMode": "production"
+        },
+        "binary": {
+          "data": {
+            "mimeType": "video/mp4",
+            "fileType": "video",
+            "fileExtension": "mp4",
+            "data": "filesystem-v2",
+            "directory": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "fileName": "267fcfc74c994d9c893864ed5d3043a1.mp4",
+            "id": "filesystem-v2:workflows/6Dzv7hyNxdFAJtBg/executions/29157/binary_data/9aa67128-bfd9-4e0c-b04a-c9cfbf1bf54e",
+            "fileSize": "54.9 MB",
+            "bytes": 54859958
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Clean Title",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Upload a video": {
+      "main": [
+        [
+          {
+            "node": "Update_Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Title": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "702df001-5622-40e4-9ea5-eb7cfcbb9996",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "6Dzv7hyNxdFAJtBg",
+  "tags": []
+}

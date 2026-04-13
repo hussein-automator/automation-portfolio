@@ -1,0 +1,1717 @@
+{
+  "name": "Heygen_avatar video MAX",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.heygen.com/v1/video_agent/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"config\": { \"avatar_id\": $json[\"avatar_id\"], \"duration_sec\": 82, \"orientation\": \"portrait\"}, \"prompt\": $json[\"Video Prompt\"]}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2480,
+        2688
+      ],
+      "id": "3183692f-9f81-46c6-8a2c-af7aad8818ef",
+      "name": "video_agent",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bZ4OhCnE1KkHOU0W",
+          "name": "Max HeyGen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.heygen.com/v1/video_status.get",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $('video_agent').first().json.data.video_id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3296,
+        2672
+      ],
+      "id": "9b5f57f9-2c4e-442d-a42a-4c832f24587d",
+      "name": "video_status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bZ4OhCnE1KkHOU0W",
+          "name": "Max HeyGen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.article }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=<prompt>\n\n<title>HeyGen Video Production Prompt — 날씨돌 Weather App Mascot</title>\n\n<context>\nYou are HeyGen video_agent production prompt engineer for a 1-minute short-form video. Before writing anything, consult the provided **prompting guide** — but do not follow it blindly. Adapt its structure, tone guidance, and formatting conventions specifically to the use case in input **article**. Extract only what is relevant to a single-character, mascot-driven short video and discard the rest.\n</context>\n\n<character>\n날씨돌 a friendly, lively and energetic rock mascot for a weather app who gives casual, helpful outfit advice based on real-time weather conditions across different cities.\n</character>\n\n<goal>\nProduce a complete, CINEMATIC ready-to-use HeyGen prompt in English that a video team can execute immediately — no guesswork required.\n</goal>\n\n<prompting_guide_usage>\nUse the **prompting guide** to improve scene structure, pacing, tone direction, and production clarity. Do not copy its examples. Adapt its principles to fit a short-form CINEMATIC mascot video with a single speaking character. Ignore any guide sections unrelated to this format.\n</prompting_guide_usage>\n\n<script_rules>\n<rule>Script must be written in natural, colloquial Korean — warm and casual, like a knowledgeable friend giving advice, not a news anchor</rule>\n<rule>Script must be under 10 sentences</rule>\n<rule>Place audio emotion tags immediately before the sentence or phrase they modify</rule>\n<rule>Approved audio tags: [laughs] [whispers] [sighs] [curious] [excited] [happy] [mischievously]</rule>\n<cinematic>Script must be CINEMATIC and not just a random EXPLAINER video</cinematic>\n</script_rules>\n\n<visual_rules>\n<rule>Any physical items mentioned — clothing, accessories, footwear — must be displayed as realistic photographic images, not motion graphics or illustrations</rule>\n<rule>City names should appear as clean text lower-thirds, not animated graphics</rule>\n<rule>Subtitles must be displayed throughout the entire video, synced to the spoken Korean script</rule>\n</visual_rules>\n\n<mandatory>\n<avatar_id>7147d43f95a64247873b84c79acf5680</avatar_id>\n<dimension>Portrait 9:16</dimension>\n<subtitles>ON — display speech CAPTIONS synced to Korean dialogue for the full duration of the video</subtitles>\n</mandatory>\n\n<output_format>\nThe final prompt must be structured exactly as follows:\n\n<section>1. Action:</section>\n<section>2. Camera:</section>\n<section>3. Script:</section>\n<section>4. Captions:</section>\n</output_format>\n\n<quality_checklist>\n<check>Did I use the prompting guide to enhance — not copy — this prompt?</check>\n<check>Is the script in natural colloquial Korean and under 10 sentences?</check>\n<check>Are all visual items specified as realistic photographic images?</check>\n<check>Is the Avatar ID 7147d43f95a64247873b84c79acf5680 included?</check>\n<check>Is the video dimension set to Portrait 9:16?</check>\n<check>Are speech subtitles enabled and synced to dialogue?</check>\n<check>Is this immediately usable by a HeyGen video production team?</check>\n</quality_checklist>\n\n<note>\n - A-roll, B-roll and Transition should be used to make the video cinematic and adapted to our brand.\n - Avatar_id must be part of the output.\n - CAPTIONS for avatar speech are to be displayed from start to finish in the video, it is MANDATORY to be in PROMPT\n - Stock images should have minimal animation and not STATIC!\n - Video script MUST be CINEMATIC not a TALKING FACE video!\n</note>\n \n\noutput\n{\n  \"Video Prompt\": \"script prompt output\",\n  \"avatar_id\": \"7147d43f95a64247873b84c79acf5680\"\n}\n\nNo extras, just clean JSON output\n</prompt>\n\n<prompting guide>\n# HeyGen Video Agent — Prompting Guide\n\n---\n\n## 1. Minimum Viable Prompt\nAlways describe the **content, audience, and purpose** at minimum.\n\n> \"Make a compliance training video explaining phishing. Use examples and list top watch-outs.\"\n\nThe more context you give, the better the scene structure, pacing, and visuals.\n\n---\n\n## 2. The Pro Move — Paste Your Script\nDrop a full script directly into the prompt. The agent follows it scene-by-scene while auto-improving flow and timing.\n\n**Script format:**\n```\nIntro (A-roll, motion graphics overlay)\nVO: \"Your opening line here.\"\n\nSection 2 (B-roll + overlay)\nVO: \"Your next line here.\"\n\nEnd card: Brand name · Tagline\n```\n\n---\n\n## 3. Universal Style Block (Add to Every Prompt)\n```\nUse minimal, clean styled visuals. Blue, black, and white as main colors.\nLeverage motion graphics as B-rolls and A-roll overlays.\nUse AI videos when necessary. When real-world footage is needed, use Stock Media.\nInclude an intro sequence, outro sequence, and chapter breaks using Motion Graphics.\n```\n\n---\n\n## 4. Visual Style Reference\n\n| Style | Best For | Prompt Phrase |\n|---|---|---|\n| Minimalistic | Corporate, SaaS, Tech | \"clean visuals with lots of white space\" |\n| Cartoon/Animated | Education, Kids | \"cartoon-style illustrated visuals\" |\n| Bold & Vibrant | Marketing, Social | \"bold, vibrant colors and dynamic visuals\" |\n| Cinematic | Brand films | \"cinematic quality with dramatic lighting\" |\n| Flat Design | App demos | \"flat design with geometric shapes\" |\n| Gradient Modern | Tech, Startups | \"modern gradient backgrounds, sleek transitions\" |\n\n**Brand colors:** Specify exact hex codes for consistency.\n> \"Use #1E40AF as primary blue, #F8FAFC as background, Inter font throughout.\"\n\n---\n\n## 5. Media Type Cheat Sheet\n\n| Content Type | Use |\n|---|---|\n| Data / Statistics | Motion Graphics ✅ |\n| Abstract Concepts | AI Generated ✅ |\n| Real Environments | Stock Media ✅ |\n| Brand Elements | Motion Graphics ✅ |\n| Human Emotions | Stock Media ✅ |\n| Custom Scenarios | AI Generated ✅ |\n| Technical Diagrams | Motion Graphics ✅ |\n\n---\n\n## 6. Scene-by-Scene Template (Maximum Control)\n\n```\nScene 1: Intro (Motion Graphics)\nVisual: Animated logo reveal, brand colors sweep\nDuration: 3s\n\nScene 2: Hook (A-roll + overlay)\nVisual: Avatar on branded background, text overlay\nVO: \"Your hook line here.\"\nDuration: 5s\n\nScene 3: Problem (Stock B-roll)\nVisual: Stock footage relevant to the pain point\nVO: \"Describe the problem.\"\nDuration: 8s\n\nScene 4: Solution (A-roll + Motion Graphics)\nVisual: Avatar + animated product logo\nVO: \"Introduce your solution.\"\nDuration: 6s\n\nScene 5: Features (Motion Graphics B-roll)\nVisual: Animated screen recording with callouts\nVO: \"Show how it works.\"\nDuration: 10s\n\nScene 6: Benefits (Motion Graphics list)\nVisual: 3 benefits animate in one by one with icons\nVO: \"Benefit 1. Benefit 2. Benefit 3.\"\nDuration: 8s\n\nScene 7: CTA (A-roll)\nVisual: Avatar, confident pose, CTA text overlay\nVO: \"Your call to action.\"\nDuration: 5s\n\nScene 8: End Card (Motion Graphics)\nVisual: Logo, tagline, website, socials\nDuration: 4s\n```\n\n\n---\n\n## 8. Pre-Flight Checklist\n\n- [ ] Content described clearly in the prompt\n- [ ] Script pasted (if you have one)\n- [ ] Visual style defined\n- [ ] Colors/fonts specified (hex codes preferred)\n- [ ] Media types called out per scene\n- [ ] Avatar selected or \"no avatar\" stated\n- [ ] Duration set (or left on Auto)\n- [ ] Attachments uploaded with usage instructions\n\n---\n\n*Rule: The more specific you are → the closer the output to your vision.*\n</prompting guide>"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        976,
+        2688
+      ],
+      "id": "13710c54-90ee-402d-998f-b0171a2e8329",
+      "name": "video_scriptAI"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        2896
+      ],
+      "id": "75db2e31-88fa-4215-ab68-196e2462b72b",
+      "name": "LLM",
+      "credentials": {
+        "anthropicApi": {
+          "id": "g2q4L6AIFf8CtUy3",
+          "name": "Max Claude"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "processing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "98f340ed-38ad-4304-98ff-665c0345651f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generating"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "480d2539-ae17-429c-bd59-5344dba87302",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generated"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d230d940-49e6-4b30-ae6f-b16f66c4175d",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "queued",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in_queue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "416f3c10-bc01-467b-b076-3a479c8241ec",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "waiting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "wait"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "64a107eb-2bf0-4922-ad88-616116e3172c",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "pending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pending"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "47a97dc7-0e2c-4b81-aa82-b254d766a671",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2451bd15-b999-4163-bb78-01767d085e84",
+                    "leftValue": "={{ $json.data.error }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1456,
+        3744
+      ],
+      "id": "3b42e086-dc95-4d82-9f1d-1d2807c98865",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8b53a205-baf6-43ed-b9bd-1d78f74536be",
+              "name": "video_url",
+              "value": "={{ $json.data.video_url }}",
+              "type": "string"
+            },
+            {
+              "id": "f512996a-262c-4872-abfc-59ceddf3c016",
+              "name": "video_id",
+              "value": "={{ $json.data.id }}",
+              "type": "string"
+            },
+            {
+              "id": "cf612d11-5506-44d2-a164-e6633feda6f3",
+              "name": "status",
+              "value": "={{ $json.data.status }}",
+              "type": "string"
+            },
+            {
+              "id": "591fa695-e140-4c86-9e11-753da5c24263",
+              "name": "timestamp",
+              "value": "={{ $now.toISODate() }} {{ $now.format('HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        3648
+      ],
+      "id": "8ffa6422-74e6-4703-a676-14f47ac69915",
+      "name": "video_url"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\n\nconst cleaned = raw.replace(/```json\\n?/g, '').replace(/```/g, '').trim();\n\nlet parsed = JSON.parse(cleaned);\n\n// If any values are themselves JSON strings, parse them too\nObject.keys(parsed).forEach(key => {\n  if (typeof parsed[key] === 'string') {\n    try { parsed[key] = JSON.parse(parsed[key]); } catch (_) {}\n  }\n});\n\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        2688
+      ],
+      "id": "a6425fb2-9769-4293-b41d-4386e587ba0d",
+      "name": "clean_output"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1x-Eto-7BoEh-HjktaiG5a7pFSVJMEmS9",
+          "mode": "list",
+          "cachedResultName": "Heygen Max",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1x-Eto-7BoEh-HjktaiG5a7pFSVJMEmS9"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        2688
+      ],
+      "id": "5c73c021-4ec6-4315-8077-b6c7b80ab062",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oYWaREgavWnBlNFz",
+          "name": "huss_drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43cada8a-7790-4003-8b33-288809767bf0",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": ".txt",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f5107746-14b4-483b-9395-21959e65e0a0",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": ".md",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -800,
+        2688
+      ],
+      "id": "b1bd6f1d-824b-4c95-8e3b-7241e174c48b",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        2688
+      ],
+      "id": "67f82fe2-75c2-4ef0-8153-069b9bbd8660",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oYWaREgavWnBlNFz",
+          "name": "huss_drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "article",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        2688
+      ],
+      "id": "8f95a5e4-02bb-447c-90be-5d3561516115",
+      "name": "article_text"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10MO5hAUIEahLSdDnfk55JgYJ0buNL3Kg6JhDmYC5RuI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "HeyGen Jobs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $json.video_id }}",
+            "source_file": "={{ $('article_text').first().json.article }}",
+            "timestamp": "={{ $json.timestamp }}",
+            "status": "={{ $json.status }}",
+            "video_url": "={{ $json.video_url }}",
+            "youtube_url": "={{ $json.youtube_url }}"
+          },
+          "matchingColumns": [
+            "video_id"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_file",
+              "displayName": "source_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_url",
+              "displayName": "youtube_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8b1e7b40-6941-42bf-b571-e8711ffa844d",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1184,
+        3648
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "info@example.com",
+        "subject": "={{ 'HeyGen video failed — ' + ($node[\"Google Drive\"].json[\"name\"] || \"Unknown File\") }}",
+        "emailType": "text",
+        "message": "={{ \"Video generation failed.\\n\\nSource file: \" + ($node[\"Google Drive\"].json[\"name\"] || \"N/A\") + \"\\nVideo ID: \" + ($json[\"data\"][\"data\"][\"video_id\"] || \"N/A\") + \"\\nTime: \" + $now + \"\\n\\nCheck your HeyGen dashboard for error details.\" }}",
+        "options": {}
+      },
+      "id": "d4c5895c-faaf-4f17-99fc-090121e52514",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        4352
+      ],
+      "webhookId": "cbd8120f-b02a-4b9f-826f-ecd813c60443",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CQ8dRwDyIvW1VJFM",
+          "name": "hussein_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dallham.cloud/webhook/heygen-webhook",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"video_url\": \"{{ $json.video_url }}\",\n  \"source_file\": \"{{ $('Download file').first().json.name }}\",\n  \"video_id\": \"{{ $json.video_id }}\",\n  \"row_number\": \"{{ $json.row_number }}\"\n}",
+        "options": {}
+      },
+      "id": "97b5171e-de0e-4292-aa4d-70d97ceb594d",
+      "name": "fire_webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3344,
+        3632
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nbJ42GJistJaQqfL",
+          "name": "youtube secret"
+        },
+        "httpHeaderAuth": {
+          "id": "bZ4OhCnE1KkHOU0W",
+          "name": "Max HeyGen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10MO5hAUIEahLSdDnfk55JgYJ0buNL3Kg6JhDmYC5RuI",
+          "mode": "list",
+          "cachedResultName": "HeyGen Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10MO5hAUIEahLSdDnfk55JgYJ0buNL3Kg6JhDmYC5RuI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "HeyGen Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10MO5hAUIEahLSdDnfk55JgYJ0buNL3Kg6JhDmYC5RuI/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "video_id",
+              "lookupValue": "={{ $json.video_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2192,
+        3648
+      ],
+      "id": "1b016908-4ae1-4fbe-abe9-4a8aec203d90",
+      "name": "get_row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N7IlWg1Kh9wzs68A",
+          "name": "hussein_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        4368
+      ],
+      "id": "0bad6f12-1f13-4f7e-95d7-d86c08fb8244",
+      "name": "5 mins",
+      "webhookId": "d79aeae0-f2c3-4c6c-8811-b7ee6b176570"
+    },
+    {
+      "parameters": {
+        "content": "# 🌐 Google Drive Trigger – Watch for New Content Files\n## This node monitors a specific Google Drive folder and starts the workflow when a new file is uploaded.\n\nIn simple words:\n- Polls the \"Heygen Max\" folder every minute for newly created files\n- Detects when a new article or content file is dropped in\n- Passes the file metadata (name, ID, type) to the next step\n- Acts as the entry point for the entire video generation pipeline\n\n### 👉 In short:\n### This node watches a Google Drive folder and fires the workflow the moment a new content file appears.",
+        "height": 548,
+        "width": 520,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        2288
+      ],
+      "id": "b7003e29-2346-4317-99ce-5c9b6f1cb6f5",
+      "name": "Sticky Note – Google Drive Trigger"
+    },
+    {
+      "parameters": {
+        "content": "# 🔍 Filter – Allow Only .txt and .md Files\n## This node checks the file type and only lets text-based content files through.\n\nIn simple words:\n- Checks the file name for a `.txt` or `.md` extension\n- Blocks any other file types from going further\n- Uses OR logic — either extension is acceptable\n- Protects the workflow from processing unsupported file formats\n\n### 👉 In short:\n### This node acts as a gatekeeper — only plain text and markdown article files are allowed to proceed.",
+        "height": 576,
+        "width": 500,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        2224
+      ],
+      "id": "9f0be623-4f93-4141-b803-71e48e206338",
+      "name": "Sticky Note – Filter"
+    },
+    {
+      "parameters": {
+        "content": "# 📥 Download File – Fetch File Content from Drive\n## This node downloads the actual file contents from Google Drive using the file's ID.\n\nIn simple words:\n- Takes the file ID passed from the Filter node\n- Downloads the raw file binary from Google Drive\n- Makes the file content available for text extraction in the next step\n- Connects via OAuth2 to access the drive securely\n\n### 👉 In short:\n### This node retrieves the actual file from Google Drive so its text content can be read and processed.",
+        "height": 640,
+        "width": 500,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        2176
+      ],
+      "id": "acd68982-2631-4c05-85dc-ffd05d5a5d75",
+      "name": "Sticky Note – Download File"
+    },
+    {
+      "parameters": {
+        "content": "# ✏️ article_text – Extract Plain Text from File\n## This node reads the downloaded file and converts it into usable plain text.\n\nIn simple words:\n- Extracts the raw text content from the binary file\n- Stores the result in a field called `article`\n- Makes the article readable for the AI prompt node that follows\n- Works with both `.txt` and `.md` file formats\n\n### 👉 In short:\n### This node turns the downloaded file into plain text so the AI can read and use it to write a video script.",
+        "height": 444,
+        "width": 500,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        2832
+      ],
+      "id": "15b73570-cbef-4183-9b02-26faaac51f3d",
+      "name": "Sticky Note – article_text"
+    },
+    {
+      "parameters": {
+        "content": "# 🧠 video_scriptAI – Generate HeyGen Video Prompt with Claude\n## This node sends the article to Claude AI and gets back a fully structured HeyGen video production prompt.\n\nIn simple words:\n- Takes the extracted article text as input\n- Uses a detailed system prompt to write a cinematic short video script\n- Targets the 날씨돌 rock mascot character for the weather app\n- Outputs a structured JSON with a `Video Prompt` and `avatar_id`\n- The script is written in natural casual Korean with full scene directions\n\n### 👉 In short:\n### This node is the creative brain — it uses Claude AI to transform a weather article into a ready-to-produce HeyGen video prompt.",
+        "height": 716,
+        "width": 540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        816,
+        2080
+      ],
+      "id": "d09719a9-73d0-414b-bbd4-bcc9dec2fc9a",
+      "name": "Sticky Note – video_scriptAI"
+    },
+    {
+      "parameters": {
+        "content": "# 🧩 clean_output – Parse and Clean AI JSON Response\n## This node takes the raw text response from Claude and converts it into a clean, usable JSON object.\n\nIn simple words:\n- Strips markdown code fences that Claude wraps around its output\n- Parses the cleaned string into a proper JSON object\n- Also checks if any inner values are themselves JSON strings and parses those too\n- Outputs a clean `{ Video Prompt, avatar_id }` object ready for the HeyGen API\n\n### 👉 In short:\n### This node sanitises Claude's raw output and extracts the clean JSON payload needed to call the HeyGen API.",
+        "height": 500,
+        "width": 520,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        2192
+      ],
+      "id": "7e18d197-f600-4e2b-bdd3-13b7f0082cda",
+      "name": "Sticky Note – clean_output"
+    },
+    {
+      "parameters": {
+        "content": "# 🚀 video_agent – Submit Video Generation Job to HeyGen\n## This node sends the AI-generated prompt to HeyGen's API to start creating the video.\n\nIn simple words:\n- Sends a POST request to the HeyGen Video Agent API\n- Includes the avatar ID, portrait orientation, and 82-second duration in the config\n- Attaches the full cinematic video prompt generated by Claude\n- Receives back a `video_id` used to track the job going forward\n\n### 👉 In short:\n### This node kicks off the HeyGen video creation job and gets back an ID to monitor its progress.",
+        "height": 500,
+        "width": 520,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        2816
+      ],
+      "id": "abc2128c-e83d-4327-a121-56e835b5f237",
+      "name": "Sticky Note – video_agent"
+    },
+    {
+      "parameters": {
+        "content": "# 📊 video_status – Check HeyGen Video Generation Status\n## This node polls the HeyGen API to find out if the video is ready yet.\n\nIn simple words:\n- Sends a GET request to HeyGen's status endpoint\n- Passes the `video_id` from the video_agent node as a query parameter\n- Returns the current status: processing, queued, waiting, pending, completed, or error\n- This node is called repeatedly in a loop until a final status is reached\n\n### 👉 In short:\n### This node checks in with HeyGen to see whether the video is still being made or is ready to use.",
+        "height": 612,
+        "width": 520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        2176
+      ],
+      "id": "22f12ef8-5bef-489b-a4c6-afae7542beb2",
+      "name": "Sticky Note – video_status"
+    },
+    {
+      "parameters": {
+        "content": "# 🔀 Switch – Route Based on Video Generation Status\n## This node reads the HeyGen status and sends the workflow down the correct path.\n\nIn simple words:\n- Checks the `data.status` field from the video_status response\n- Routes to a **5-minute wait** if status is: `processing`, `queued`, `waiting`, or `pending`\n- Routes to **video_url extraction** if status is `success` or `completed`\n- Routes to **Gmail error alert** if an `error` field exists in the response\n- Keeps the workflow looping patiently until the video finishes or fails\n\n### 👉 In short:\n### This node is the traffic controller — it decides whether to keep waiting, grab the result, or send a failure alert.",
+        "height": 892,
+        "width": 540,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        3216
+      ],
+      "id": "78c92b57-0408-41d4-a115-aa73981a776d",
+      "name": "Sticky Note – Switch"
+    },
+    {
+      "parameters": {
+        "content": "# ✏️ video_url – Extract and Format Final Video Data\n## This node pulls the key details from the completed HeyGen response and structures them cleanly.\n\nIn simple words:\n- Extracts the `video_url` — the downloadable MP4 link\n- Extracts the `video_id` for tracking and reference\n- Captures the `status` field to confirm completion\n- Adds a `timestamp` with the date and time the video was completed\n\n### 👉 In short:\n### This node packages the finished video's URL, ID, status, and timestamp into a clean record ready to be saved.",
+        "height": 672,
+        "width": 520,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        3136
+      ],
+      "id": "c73a6aab-3b4d-420e-9253-e3d8098fca7d",
+      "name": "Sticky Note – video_url"
+    },
+    {
+      "parameters": {
+        "content": "# ⏳ 5 mins – Wait Before Retrying Status Check\n## This node pauses the workflow before checking the video status again.\n\nIn simple words:\n- Waits for 1 minute before looping back to check HeyGen again\n- Gives HeyGen time to process the video between each poll\n- Prevents the workflow from hammering the API with rapid requests\n- Feeds directly back into the video_status node to continue the polling loop\n\n### 👉 In short:\n### This node makes the workflow pause patiently before asking HeyGen again if the video is ready.",
+        "height": 480,
+        "width": 500,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        608,
+        4512
+      ],
+      "id": "fd0689cb-bdfe-4575-a792-dd26cddc8248",
+      "name": "Sticky Note – 5 mins"
+    },
+    {
+      "parameters": {
+        "content": "# 📧 Gmail – Send Failure Alert Email\n## This node sends an email notification when HeyGen reports an error during video generation.\n\nIn simple words:\n- Triggers only when the Switch node detects an error in the HeyGen response\n- Sends an alert email with the source file name, video ID, and timestamp\n- Directs the recipient to check their HeyGen dashboard for full error details\n- Ensures failures are never silently missed\n\n### 👉 In short:\n### This node alerts the team by email whenever a video fails to generate so nothing breaks without anyone knowing.",
+        "height": 512,
+        "width": 520,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        4512
+      ],
+      "id": "fcedc8ee-f1fc-4039-997c-62f0d8188171",
+      "name": "Sticky Note – Gmail"
+    },
+    {
+      "parameters": {
+        "content": "# 💾 Google Sheets – Log Video Job Record\n## This node saves the completed video details into the HeyGen Jobs tracking spreadsheet.\n\nIn simple words:\n- Appends a new row to the \"HeyGen Jobs\" sheet in Google Sheets\n- Saves the video ID, source article content, timestamp, status, and video URL\n- Uses `video_id` as the matching key to prevent duplicate rows\n- Creates a permanent log of every video generated by this workflow\n\n### 👉 In short:\n### This node records every completed video job in a Google Sheet so the team always knows what was made and where to find it.",
+        "height": 644,
+        "width": 520,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        3152
+      ],
+      "id": "45fdf551-e4b5-4e80-8ec7-caeb08f28d65",
+      "name": "Sticky Note – Google Sheets"
+    },
+    {
+      "parameters": {
+        "content": "# 🔍 get_row – Look Up the Saved Row in Google Sheets\n## This node retrieves the specific row that was just written, using the video ID as the lookup key.\n\nIn simple words:\n- Queries the \"HeyGen Jobs\" sheet for the row matching the current `video_id`\n- Returns the full row including the `row_number` field\n- The `row_number` is needed by the webhook node to reference this exact job\n- Ensures the next step fires with accurate and up-to-date row data\n\n### 👉 In short:\n### This node looks up the freshly saved row so the webhook can reference it correctly when notifying the downstream system.",
+        "height": 516,
+        "width": 520,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        3792
+      ],
+      "id": "9764f611-e4c3-4b93-a160-74850e369891",
+      "name": "Sticky Note – get_row"
+    },
+    {
+      "parameters": {
+        "content": "# 🚀 fire_webhook – Notify Downstream System of Completed Video\n## This node sends a POST request to an external webhook to signal that a new video is ready.\n\nIn simple words:\n- Sends the `video_url`, `source_file`, `video_id`, and `row_number` to an external endpoint\n- Triggers whatever downstream process is listening — such as a YouTube upload workflow\n- Includes a `Content-Type: application/json` header for proper delivery\n- Acts as the final handoff — passing the finished video on to the next stage in the pipeline\n\n### 👉 In short:\n### This node fires a webhook to tell the next system that a new HeyGen video is ready for further processing.",
+        "height": 584,
+        "width": 540,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3584,
+        3376
+      ],
+      "id": "68d7796f-04c2-467e-ab94-a462b463d7e3",
+      "name": "Sticky Note – fire_webhook"
+    }
+  ],
+  "pinData": {
+    "Google Drive Trigger": [
+      {
+        "json": {
+          "parents": [
+            "1x-Eto-7BoEh-HjktaiG5a7pFSVJMEmS9"
+          ],
+          "lastModifyingUser": {
+            "displayName": "Hussein Adebayo",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "10128499509909126976",
+            "emailAddress": "hellohusseinadebayo@gmail.com",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+          },
+          "owners": [
+            {
+              "displayName": "Hussein Adebayo",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "10128499509909126976",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+            }
+          ],
+          "permissions": [
+            {
+              "kind": "drive#permission",
+              "id": "anyoneWithLink",
+              "type": "anyone",
+              "role": "reader",
+              "allowFileDiscovery": false
+            },
+            {
+              "kind": "drive#permission",
+              "id": "10128499509909126976",
+              "type": "user",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "role": "owner",
+              "displayName": "Hussein Adebayo",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "spaces": [
+            "drive"
+          ],
+          "capabilities": {
+            "canAcceptOwnership": false,
+            "canAddChildren": false,
+            "canAddMyDriveParent": false,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canChangeItemDownloadRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canChangeViewersCanCopyContent": true,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDisableInheritedPermissions": false,
+            "canDownload": true,
+            "canEdit": true,
+            "canEnableInheritedPermissions": true,
+            "canListChildren": false,
+            "canModifyContent": true,
+            "canModifyContentRestriction": true,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canModifyLabels": false,
+            "canMoveChildrenWithinDrive": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canMoveItemOutOfDrive": true,
+            "canMoveItemWithinDrive": true,
+            "canReadLabels": false,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRemoveContentRestriction": false,
+            "canRemoveMyDriveParent": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "permissionIds": [
+            "anyoneWithLink",
+            "10128499509909126976"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "downloadRestrictions": {
+            "itemDownloadRestriction": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            },
+            "effectiveDownloadRestrictionWithContext": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            }
+          },
+          "kind": "drive#file",
+          "id": "1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU",
+          "name": "content.md",
+          "mimeType": "text/markdown",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "version": "1",
+          "webContentLink": "https://drive.google.com/uc?id=1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU&export=download",
+          "webViewLink": "https://drive.google.com/file/d/1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU/view?usp=drivesdk",
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/text/markdown",
+          "hasThumbnail": false,
+          "thumbnailVersion": "0",
+          "viewedByMe": true,
+          "viewedByMeTime": "2026-02-27T04:22:17.180Z",
+          "createdTime": "2026-02-27T04:22:17.180Z",
+          "modifiedTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMeTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMe": true,
+          "shared": true,
+          "ownedByMe": true,
+          "viewersCanCopyContent": true,
+          "copyRequiresWriterPermission": false,
+          "writersCanShare": true,
+          "originalFilename": "content.md",
+          "fullFileExtension": "md",
+          "fileExtension": "md",
+          "md5Checksum": "eea0f85db3995d8fc9540eb3f45a6cdb",
+          "sha1Checksum": "ddc84e058cc58da9cd5f5fdb6c2ba524a80cfcbf",
+          "sha256Checksum": "912455253302e64e47cdebd9fc2d207ca6d01eaf8d53fb56ee183654c1af37b0",
+          "size": "10031",
+          "quotaBytesUsed": "10031",
+          "headRevisionId": "0B5CTjonZBCtAY1pMMHJZano0ek4vRlZTWkJBSWdTaHVndGJZPQ",
+          "isAppAuthorized": false,
+          "inheritedPermissionsDisabled": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "video_agent": [
+      {
+        "json": {
+          "error": null,
+          "data": {
+            "video_id": "267fcfc74c994d9c893864ed5d3043a1"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "video_scriptAI": [
+      {
+        "json": {
+          "text": "```json\n{\n  \"Video Prompt\": \"1. Action:\\n\\nScene 1: INTRO — Motion Graphics Reveal (3s)\\nVisual: Animated logo of 날씨돌 (a friendly rock mascot) bounces onto screen against a gradient blue-to-white background. Subtle dust particles float around as the mascot settles into frame with a warm smile.\\n\\nScene 2: HOOK — A-roll + City Lower-Third (5s)\\nVisual: 날씨돌 appears on a clean minimalist background (white with soft blue gradient). Text lower-third displays \\\"두바이\\\" in clean sans-serif font. Mascot gestures enthusiastically.\\nVO: [excited] \\\"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\\\"\\n\\nScene 3: DAYTIME OUTFIT — B-roll Photographic Images (8s)\\nVisual: High-quality photographic images fade in sequentially:\\n- Clean white short-sleeve cotton t-shirt laid flat\\n- Light linen shorts in beige\\n- Comfortable walking sandals\\n- Wide-brimmed sun hat\\nText overlay: \\\"낮 기온 26°C — 가볍게!\\\"\\nVO: \\\"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\\\"\\n\\nScene 4: LAYERING TRANSITION — A-roll + Motion Graphics (6s)\\nVisual: 날씨돌 gestures with both hands as animated thermometer graphic shows temperature dropping from 26°C to 15°C. Soft blue color wash sweeps across screen.\\nVO: [whispers] \\\"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\\\"\\n\\nScene 5: EVENING OUTFIT — B-roll Photographic Images (10s)\\nVisual: High-quality photographic images appear with gentle fade transitions:\\n- Lightweight denim jacket on hanger\\n- Long-sleeve cotton shirt in neutral tone\\n- Comfortable long pants (khaki)\\n- Closed-toe sneakers\\nText overlay: \\\"밤 기온 15°C — 레이어링 필수!\\\"\\nVO: \\\"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\\\"\\n\\nScene 6: CULTURAL TIP — A-roll + Photographic Reference (7s)\\nVisual: 날씨돌 appears with a thoughtful expression. Split-screen shows photographic images of modest clothing options:\\n- Long maxi skirt\\n- Breathable long-sleeve shirt covering shoulders\\nText overlay: \\\"공공장소 복장 TIP\\\"\\nVO: [curious] \\\"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\\\"\\n\\nScene 7: DESERT SAFARI TIP — B-roll Photographic Images (8s)\\nVisual: Photographic images of desert safari outfit essentials:\\n- Long lightweight pants\\n- Long-sleeve breathable shirt\\n- Light windbreaker jacket\\n- Closed-toe hiking boots\\nText overlay: \\\"사막 사파리 준비물\\\"\\nVO: [mischievously] \\\"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\\\"\\n\\nScene 8: FINAL TIP — A-roll + Icon Overlay (6s)\\nVisual: 날씨돌 holds up animated icons of a pashmina scarf and folding umbrella. Icons gently pulse.\\nVO: [happy] \\\"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\\\"\\n\\nScene 9: CTA — A-roll + Text Overlay (5s)\\nVisual: 날씨돌 gives a friendly wave. Text overlay appears: \\\"날씨돌과 함께 완벽한 여행 준비!\\\"\\nVO: \\\"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\\\"\\n\\nScene 10: END CARD — Motion Graphics (4s)\\nVisual: 날씨돌 logo animates to center. Clean text appears below: \\\"날씨돌 Weather App\\\" with app download icons. Soft blue gradient background.\\n\\n\\n2. Camera:\\n\\nScene 1: Centered frame, medium shot\\nScene 2: Medium close-up, eye-level, centered\\nScene 3: Full-frame product photography shots, smooth crossfade transitions\\nScene 4: Medium shot, slight zoom-in for emphasis\\nScene 5: Full-frame product photography, gentle fade-in sequence\\nScene 6: Split-screen medium shot (left: avatar, right: product photos)\\nScene 7: Full-frame product photography, sequential reveal\\nScene 8: Medium shot with floating icon overlays\\nScene 9: Medium close-up, friendly eye-level angle\\nScene 10: Centered frame, logo focus\\n\\n\\n3. Script:\\n\\n[excited] \\\"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\\\"\\n\\n\\\"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\\\"\\n\\n[whispers] \\\"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\\\"\\n\\n\\\"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\\\"\\n\\n[curious] \\\"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\\\"\\n\\n[mischievously] \\\"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\\\"\\n\\n[happy] \\\"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\\\"\\n\\n\\\"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\\\"\\n\\n\\n4. Captions:\\n\\nCaptions MUST be displayed throughout the entire video duration, synced precisely to the Korean dialogue:\\n\\n[00:03-00:08] \\\"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\\\"\\n\\n[00:08-00:13] \\\"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\\\"\\n\\n[00:13-00:19] \\\"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\\\"\\n\\n[00:19-00:25] \\\"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\\\"\\n\\n[00:25-00:32] \\\"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\\\"\\n\\n[00:32-00:40] \\\"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\\\"\\n\\n[00:40-00:45] \\\"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\\\"\\n\\n[00:45-00:50] \\\"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\\\"\\n\\nCaption Style: Clean sans-serif font, white text with black outline for readability, positioned at lower-third throughout video.\",\n  \"avatar_id\": \"7147d43f95a64247873b84c79acf5680\"\n}\n```"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "clean_output": [
+      {
+        "json": {
+          "Video Prompt": "1. Action:\n\nScene 1: INTRO — Motion Graphics Reveal (3s)\nVisual: Animated logo of 날씨돌 (a friendly rock mascot) bounces onto screen against a gradient blue-to-white background. Subtle dust particles float around as the mascot settles into frame with a warm smile.\n\nScene 2: HOOK — A-roll + City Lower-Third (5s)\nVisual: 날씨돌 appears on a clean minimalist background (white with soft blue gradient). Text lower-third displays \"두바이\" in clean sans-serif font. Mascot gestures enthusiastically.\nVO: [excited] \"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\"\n\nScene 3: DAYTIME OUTFIT — B-roll Photographic Images (8s)\nVisual: High-quality photographic images fade in sequentially:\n- Clean white short-sleeve cotton t-shirt laid flat\n- Light linen shorts in beige\n- Comfortable walking sandals\n- Wide-brimmed sun hat\nText overlay: \"낮 기온 26°C — 가볍게!\"\nVO: \"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\"\n\nScene 4: LAYERING TRANSITION — A-roll + Motion Graphics (6s)\nVisual: 날씨돌 gestures with both hands as animated thermometer graphic shows temperature dropping from 26°C to 15°C. Soft blue color wash sweeps across screen.\nVO: [whispers] \"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\"\n\nScene 5: EVENING OUTFIT — B-roll Photographic Images (10s)\nVisual: High-quality photographic images appear with gentle fade transitions:\n- Lightweight denim jacket on hanger\n- Long-sleeve cotton shirt in neutral tone\n- Comfortable long pants (khaki)\n- Closed-toe sneakers\nText overlay: \"밤 기온 15°C — 레이어링 필수!\"\nVO: \"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\"\n\nScene 6: CULTURAL TIP — A-roll + Photographic Reference (7s)\nVisual: 날씨돌 appears with a thoughtful expression. Split-screen shows photographic images of modest clothing options:\n- Long maxi skirt\n- Breathable long-sleeve shirt covering shoulders\nText overlay: \"공공장소 복장 TIP\"\nVO: [curious] \"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\"\n\nScene 7: DESERT SAFARI TIP — B-roll Photographic Images (8s)\nVisual: Photographic images of desert safari outfit essentials:\n- Long lightweight pants\n- Long-sleeve breathable shirt\n- Light windbreaker jacket\n- Closed-toe hiking boots\nText overlay: \"사막 사파리 준비물\"\nVO: [mischievously] \"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\"\n\nScene 8: FINAL TIP — A-roll + Icon Overlay (6s)\nVisual: 날씨돌 holds up animated icons of a pashmina scarf and folding umbrella. Icons gently pulse.\nVO: [happy] \"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\"\n\nScene 9: CTA — A-roll + Text Overlay (5s)\nVisual: 날씨돌 gives a friendly wave. Text overlay appears: \"날씨돌과 함께 완벽한 여행 준비!\"\nVO: \"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\"\n\nScene 10: END CARD — Motion Graphics (4s)\nVisual: 날씨돌 logo animates to center. Clean text appears below: \"날씨돌 Weather App\" with app download icons. Soft blue gradient background.\n\n\n2. Camera:\n\nScene 1: Centered frame, medium shot\nScene 2: Medium close-up, eye-level, centered\nScene 3: Full-frame product photography shots, smooth crossfade transitions\nScene 4: Medium shot, slight zoom-in for emphasis\nScene 5: Full-frame product photography, gentle fade-in sequence\nScene 6: Split-screen medium shot (left: avatar, right: product photos)\nScene 7: Full-frame product photography, sequential reveal\nScene 8: Medium shot with floating icon overlays\nScene 9: Medium close-up, friendly eye-level angle\nScene 10: Centered frame, logo focus\n\n\n3. Script:\n\n[excited] \"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\"\n\n\"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\"\n\n[whispers] \"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\"\n\n\"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\"\n\n[curious] \"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\"\n\n[mischievously] \"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\"\n\n[happy] \"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\"\n\n\"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\"\n\n\n4. Captions:\n\nCaptions MUST be displayed throughout the entire video duration, synced precisely to the Korean dialogue:\n\n[00:03-00:08] \"12월 두바이 여행 계획 중이신가요? 날씨돌이 완벽한 옷차림 팁 알려드릴게요!\"\n\n[00:08-00:13] \"낮엔 26도까지 올라가니까, 반소매에 편한 반바지면 딱이에요.\"\n\n[00:13-00:19] \"근데요, 밤엔 15도까지 뚝 떨어져요. 일교차가 장난 아니거든요!\"\n\n[00:19-00:25] \"그래서 가벼운 재킷이랑 긴팔은 꼭 챙기세요. 겹쳐 입기가 진짜 중요해요.\"\n\n[00:25-00:32] \"쇼핑몰이나 공공장소 갈 땐 어깨랑 무릎 덮는 옷으로 준비하면 완벽!\"\n\n[00:32-00:40] \"사막 사파리 가실 거면, 긴바지에 바람막이 하나 더 챙기는 거 잊지 마세요!\"\n\n[00:40-00:45] \"파시미나 하나랑 접이식 우산 넣어두면 만능이에요.\"\n\n[00:45-00:50] \"12월 두바이, 이제 걱정 없죠? 날씨돌이 항상 함께할게요!\"\n\nCaption Style: Clean sans-serif font, white text with black outline for readability, positioned at lower-third throughout video.",
+          "avatar_id": "7147d43f95a64247873b84c79acf5680"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Filter": [
+      {
+        "json": {
+          "parents": [
+            "1x-Eto-7BoEh-HjktaiG5a7pFSVJMEmS9"
+          ],
+          "lastModifyingUser": {
+            "displayName": "Hussein Adebayo",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "10128499509909126976",
+            "emailAddress": "hellohusseinadebayo@gmail.com",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+          },
+          "owners": [
+            {
+              "displayName": "Hussein Adebayo",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "10128499509909126976",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+            }
+          ],
+          "permissions": [
+            {
+              "kind": "drive#permission",
+              "id": "anyoneWithLink",
+              "type": "anyone",
+              "role": "reader",
+              "allowFileDiscovery": false
+            },
+            {
+              "kind": "drive#permission",
+              "id": "10128499509909126976",
+              "type": "user",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "role": "owner",
+              "displayName": "Hussein Adebayo",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "spaces": [
+            "drive"
+          ],
+          "capabilities": {
+            "canAcceptOwnership": false,
+            "canAddChildren": false,
+            "canAddMyDriveParent": false,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canChangeItemDownloadRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canChangeViewersCanCopyContent": true,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDisableInheritedPermissions": false,
+            "canDownload": true,
+            "canEdit": true,
+            "canEnableInheritedPermissions": true,
+            "canListChildren": false,
+            "canModifyContent": true,
+            "canModifyContentRestriction": true,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canModifyLabels": false,
+            "canMoveChildrenWithinDrive": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canMoveItemOutOfDrive": true,
+            "canMoveItemWithinDrive": true,
+            "canReadLabels": false,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRemoveContentRestriction": false,
+            "canRemoveMyDriveParent": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "permissionIds": [
+            "anyoneWithLink",
+            "10128499509909126976"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "downloadRestrictions": {
+            "itemDownloadRestriction": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            },
+            "effectiveDownloadRestrictionWithContext": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            }
+          },
+          "kind": "drive#file",
+          "id": "1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU",
+          "name": "content.md",
+          "mimeType": "text/markdown",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "version": "1",
+          "webContentLink": "https://drive.google.com/uc?id=1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU&export=download",
+          "webViewLink": "https://drive.google.com/file/d/1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU/view?usp=drivesdk",
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/text/markdown",
+          "hasThumbnail": false,
+          "thumbnailVersion": "0",
+          "viewedByMe": true,
+          "viewedByMeTime": "2026-02-27T04:22:17.180Z",
+          "createdTime": "2026-02-27T04:22:17.180Z",
+          "modifiedTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMeTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMe": true,
+          "shared": true,
+          "ownedByMe": true,
+          "viewersCanCopyContent": true,
+          "copyRequiresWriterPermission": false,
+          "writersCanShare": true,
+          "originalFilename": "content.md",
+          "fullFileExtension": "md",
+          "fileExtension": "md",
+          "md5Checksum": "eea0f85db3995d8fc9540eb3f45a6cdb",
+          "sha1Checksum": "ddc84e058cc58da9cd5f5fdb6c2ba524a80cfcbf",
+          "sha256Checksum": "912455253302e64e47cdebd9fc2d207ca6d01eaf8d53fb56ee183654c1af37b0",
+          "size": "10031",
+          "quotaBytesUsed": "10031",
+          "headRevisionId": "0B5CTjonZBCtAY1pMMHJZano0ek4vRlZTWkJBSWdTaHVndGJZPQ",
+          "isAppAuthorized": false,
+          "inheritedPermissionsDisabled": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Download file": [
+      {
+        "json": {
+          "parents": [
+            "1x-Eto-7BoEh-HjktaiG5a7pFSVJMEmS9"
+          ],
+          "lastModifyingUser": {
+            "displayName": "Hussein Adebayo",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "10128499509909126976",
+            "emailAddress": "hellohusseinadebayo@gmail.com",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+          },
+          "owners": [
+            {
+              "displayName": "Hussein Adebayo",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "10128499509909126976",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64"
+            }
+          ],
+          "permissions": [
+            {
+              "kind": "drive#permission",
+              "id": "anyoneWithLink",
+              "type": "anyone",
+              "role": "reader",
+              "allowFileDiscovery": false
+            },
+            {
+              "kind": "drive#permission",
+              "id": "10128499509909126976",
+              "type": "user",
+              "emailAddress": "hellohusseinadebayo@gmail.com",
+              "role": "owner",
+              "displayName": "Hussein Adebayo",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocLW25z_Nqb4BLCVtSKLtmSZgHWUJWMJhmAJEVznuKyWuHwUP7c=s64",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "spaces": [
+            "drive"
+          ],
+          "capabilities": {
+            "canAcceptOwnership": false,
+            "canAddChildren": false,
+            "canAddMyDriveParent": false,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canChangeItemDownloadRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canChangeViewersCanCopyContent": true,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDisableInheritedPermissions": false,
+            "canDownload": true,
+            "canEdit": true,
+            "canEnableInheritedPermissions": true,
+            "canListChildren": false,
+            "canModifyContent": true,
+            "canModifyContentRestriction": true,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canModifyLabels": false,
+            "canMoveChildrenWithinDrive": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canMoveItemOutOfDrive": true,
+            "canMoveItemWithinDrive": true,
+            "canReadLabels": false,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRemoveContentRestriction": false,
+            "canRemoveMyDriveParent": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "permissionIds": [
+            "anyoneWithLink",
+            "10128499509909126976"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "downloadRestrictions": {
+            "itemDownloadRestriction": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            },
+            "effectiveDownloadRestrictionWithContext": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            }
+          },
+          "kind": "drive#file",
+          "id": "1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU",
+          "name": "content.md",
+          "mimeType": "text/markdown",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "version": "1",
+          "webContentLink": "https://drive.google.com/uc?id=1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU&export=download",
+          "webViewLink": "https://drive.google.com/file/d/1tE4CkYmVAaozpMKh9m1yZ29_KBF1xJqU/view?usp=drivesdk",
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/text/markdown",
+          "hasThumbnail": false,
+          "thumbnailVersion": "0",
+          "viewedByMe": true,
+          "viewedByMeTime": "2026-02-27T04:22:17.180Z",
+          "createdTime": "2026-02-27T04:22:17.180Z",
+          "modifiedTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMeTime": "2026-02-25T07:00:57.000Z",
+          "modifiedByMe": true,
+          "shared": true,
+          "ownedByMe": true,
+          "viewersCanCopyContent": true,
+          "copyRequiresWriterPermission": false,
+          "writersCanShare": true,
+          "originalFilename": "content.md",
+          "fullFileExtension": "md",
+          "fileExtension": "md",
+          "md5Checksum": "eea0f85db3995d8fc9540eb3f45a6cdb",
+          "sha1Checksum": "ddc84e058cc58da9cd5f5fdb6c2ba524a80cfcbf",
+          "sha256Checksum": "912455253302e64e47cdebd9fc2d207ca6d01eaf8d53fb56ee183654c1af37b0",
+          "size": "10031",
+          "quotaBytesUsed": "10031",
+          "headRevisionId": "0B5CTjonZBCtAY1pMMHJZano0ek4vRlZTWkJBSWdTaHVndGJZPQ",
+          "isAppAuthorized": false,
+          "inheritedPermissionsDisabled": false
+        },
+        "binary": {
+          "data": {
+            "mimeType": "text/markdown",
+            "fileType": "text",
+            "fileExtension": "md",
+            "data": "filesystem-v2",
+            "fileName": "content.md",
+            "id": "filesystem-v2:workflows/srrBFw6oj82GSQAMtz9y7/executions/29104/binary_data/562bc3ad-311d-49d7-9828-9da0ea3c874e",
+            "fileSize": "10 kB",
+            "bytes": 10031
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "article_text": [
+      {
+        "json": {
+          "article": "## 두바이 12월 날씨 정보\n\n<img src=\"https://pittcher.com/image/0e441c05-753d-47e9-92df-538d273d1d41.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 기온은 어떠한가요?\n\n두바이는 아열대 사막 기후에 속하므로, 우리가 생각하는 겨울과는 전혀 다른 아주 온화한 날씨를 보입니다(1). 낮 최고 기온은 평균 26-27°C 정도로, 반소매 옷을 입고 다니기에 딱 좋은 따뜻한 날씨가 지속돼요. 다만 밤에는 기온이 15-18°C까지 뚝 떨어지므로, 일교차가 비교적 큰 편이라는 점을 꼭 기억해야 합니다(1). **월평균 기온은 약 21.4°C를 기록하며, 최고 기온은 26°C, 최저 기온은 15°C로 측정되었습니다(2).** 흥미롭게도, 12월 초에는 평균 최고 기온이 27.6°C였다가 월말로 갈수록 25.2°C로 서서히 내려가는 경향이 관찰되곤 합니다(2).\n\n12월의 아랍에미리트 기후는 야외 활동과 관광에 이상적인 날씨 조건을 제공한다고 분석되며, 12월을 두바이 여행의 최적기로 평가하고 있어요(1). 습도는 46-56%로 연중 최고 수준에 달하지만, 한국의 여름철 습도에 비하면 훨씬 쾌적합니다. 해수 온도 역시 평균 25°C를 유지하여, 라 메르(La Mer) 해변에서 수영을 즐겨도 전혀 춥지 않고 오히려 상쾌함을 느꼈던 기억이 납니다(2).\n\n> 최근 기후 변화로 겨울철 기온이 점차 오르는 추세임을 부정할 수는 없겠으나, 여전히 12월은 두바이를 방문하기 가장 좋은 시기임이 틀림없습니다(1).\n\n*주의: 이 시기는 전 세계 관광객들이 몰려드는 성수기인 만큼 호텔 요금이 여름보다 30% 이상 치솟는 경향이 있습니다. 최소 2-3개월 전에는 예약을 마치는 것이 현명한 선택입니다(31).*\n\n<img src=\"https://pittcher.com/image/22699bdb-1a06-4d75-9739-a2bbd31899ba.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 강수량은 얼마나 되나요?\n\n두바이는 사막 기후 지역이라 비 걱정은 거의 하지 않아도 무방합니다. 12월 평균 강수량은 15mm에 불과한데, 이는 연간 총 강수량 95mm의 약 16%에 그치는 수준입니다(7). 기상 관측 데이터를 살펴보면, 12월 한 달 중 비가 오는 날은 평균 이틀 정도에 불과합니다. **비가 내리더라도 대부분 짧고 강하게 쏟아지는 소나기 형태라 여행에 큰 지장을 주지 않는다는 특징이 있습니다(7).**\n\n월 중 가장 많은 비가 쏟아진 날은 12월 17일로 5.56mm를 기록했으며, 가장 건조했던 날은 12월 19일로 0.09mm에 불과했던 것으로 조사되었습니다(13). 기상청 전문가들의 설명에 의하면, 아랍에미리트의 비는 주로 11월부터 3월 사이의 겨울에 집중되지만, 사막 기후 특성상 비가 매우 드물게 내린다고 합니다(7).\n\n| 월별 평균 강수량 (mm) | 10월 | 11월 | 12월 | 1월 | 2월 |\n|---|---|---|---|---|---|\n| 강수량 | 1.2 | 6.8 | 15 | 10.9 | 24 |\n\n12월 강수량이 연중 세 번째로 많다고는 하지만, 절대적인 양 자체가 워낙 적기 때문에 관광 활동에 미치는 영향은 거의 없다고 보아도 무방합니다(1). 혹시 모를 상황에 대비하여 가벼운 접이식 우산 하나 정도 챙기는 것도 나쁘지 않은 선택일 듯합니다.\n\n<img src=\"https://pittcher.com/image/2f135068-ba1d-4d81-a37a-edfceb245ad2.png\" alt=\"image\" width=\"512\">\n\n## 두바이 12월 여행 준비\n\n\n\n### 두바이 12월 옷차림, 어떻게 준비해야 할까요?\n\n12월 두바이 여행 옷차림의 핵심은 다름 아닌 '레이어링', 즉 겹쳐 입기입니다. 낮과 밤의 큰 일교차를 반드시 고려해야 합니다(21). 낮에는 가벼운 여름옷, 이를테면 반소매 티셔츠나 원피스가 적합하지만, 해가 지면 금방 선선해지므로 가벼운 겉옷을 꼭 준비해야 해요(21). 특히 두바이는 이슬람 문화권에 속하므로, 쇼핑몰이나 공공장소에 방문할 때는 현지 문화 존중 차원에서 어깨와 무릎을 덮는 보수적인 복장을 입는 것이 바람직합니다. 개인적으로는 얇은 긴소매 셔츠나 롱스커트가 아주 유용했던 기억이 있습니다(21).\n\n낮 기온 25°C, 밤 기온 11°C 정도의 일교차를 생각하면 긴팔 상의, 가벼운 재킷, 카디건 등은 필수 준비물일 게 분명해 보입니다(24). 소재는 땀 흡수가 잘 되면서 바람이 잘 통하는 면, 린넨, 대나무 혼방 같은 천연 소재 옷이 사막 기후에 가장 적합합니다. 반대로 폴리에스테르 같은 합성 소재는 피하는 것이 좋습니다(24).\n\n두바이에서 사막 사파리를 계획하고 있다면 다음과 같은 옷차림을 추천합니다.\n\n*   긴 바지\n*   어깨를 덮는 상의\n*   저녁 추위에 대비한 가벼운 재킷\n\n덧붙여 두바이 몰(The Dubai Mall) 같은 실내 공간은 에어컨이 매우 강하니, 파시미나나 얇은 카디건을 항상 가방에 넣어 다니는 것이 현명한 선택일 겁니다(28).\n\n<img src=\"https://pittcher.com/image/228930ff-2525-4a82-8f11-437495d40ef2.png\" alt=\"image\" width=\"512\">\n\n### 완벽한 두바이 12월 여행을 위한 팁\n\n12월은 두바이 여행의 최적기입니다! 15-26°C를 오가는 쾌적한 기온과 거의 비가 내리지 않는 날씨 덕분에 야외 활동을 마음껏 즐길 수 있는 최고의 시기이거든요(31). 두바이 관광청 데이터에 따르면 12월부터 2월까지가 호텔 점유율이 가장 높은 성수기입니다. 따라서 항공권과 숙소는 최대한 서둘러 예약하는 것이 중요합니다(39). 게다가 12월에는 UAE 국경일(12월 2일) 연휴, 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 세계적인 신년 불꽃축제 등 다채로운 행사가 가득 펼쳐져 도시 전체가 축제 분위기에 휩싸입니다(33).\n\n성수기이다 보니 호텔 요금은 평소보다 30-50%까지 치솟습니다. 제 경험상 최소 3개월 전에는 예약을 마치는 것이 바람직하더라고요(31). 세계에서 가장 높은 건물인 부르즈 칼리파 같은 인기 명소 역시 현장에서 표를 구하기 어려울 수도 있습니다. 그러니 반드시 온라인으로 사전 예약을 마쳐야 합니다(31). 여행 전문가들은 사막 사파리, 마리나 워크 산책, 주메이라 해변에서의 휴양 등 야외 활동을 12월에 만끽하라고 적극적으로 권합니다. **특히 해질녘 사막의 황홀한 풍경을 감상할 수 있는 저녁 사막 투어는 정말 환상적이니, 꼭 경험해 보시길 추천합니다(31).**\n\n12월의 바닷물 온도는 25°C를 유지하여 수영과 수상 스포츠를 즐기기에도 완벽하며, 하루 평균 8-9시간의 풍부한 일조량 덕분에 낮 동안 알차게 활동할 수 있습니다(3). 만약 신년 불꽃축제를 제대로 관람하고 싶다면, 오후 5-6시 전에는 다운타운에 도착해야 함을 명심해야 합니다. 오후 8시 이후에는 도로가 통제되어 극심한 교통 혼잡이 발생하는 경우가 많습니다(33).\n\n결론적으로, 12월의 두바이 여행은 온화한 날씨와 풍성한 축제 덕분에 잊지 못할 경험을 선사할 것이 틀림없어요(31). 하지만 성수기라는 점을 감안하여 숙소와 주요 명소는 미리 예약하고, 큰 일교차에 대비한 옷차림을 꼼꼼히 준비하는 것이 성공적인 여행의 열쇠라는 점을 기억하시지요(31, 21). 철저한 준비를 통해 두바이의 무한한 매력을 온전히 느껴보시길 바랍니다(1).\n\n<img src=\"https://pittcher.com/image/d0de61d9-5520-4495-9ca8-532e6cbda438.png\" alt=\"image\" width=\"512\">\n\n## FAQ\n\n**Q1: 두바이 12월의 평균 기온은 어느 정도인가요?**\nA1: 두바이 12월의 평균 기온은 21.4°C에 달하며, 낮 최고 기온은 26°C, 밤 최저 기온은 15°C 정도로 측정됩니다(2). 낮에는 따뜻하고 밤에는 선선하더라고요.\n\n**Q2: 12월에 두바이에서 비가 자주 오나요?**\nA2: 아니요, 12월은 평균 강수량이 15mm로 매우 적은 편입니다. 비 오는 날도 평균 이틀 정도에 불과하여 여행 중 비를 만날 확률은 낮다고 보아도 무방해요(7).\n\n**Q3: 12월 두바이 여행 시 어떤 옷차림이 가장 적절한가요?**\nA3: 낮에는 반소매 같은 가벼운 여름옷이 적합합니다. 밤에는 기온이 내려가므로 가벼운 재킷이나 긴팔 상의를 겹쳐 입는 것이 좋아요(21). 쇼핑몰 등 공공장소 방문 시에는 어깨와 무릎을 덮는 옷을 준비하는 것을 추천합니다(21).\n\n**Q4: 12월에 두바이 호텔은 미리 예약해야 하나요?**\nA4: 네, 12월은 전 세계 관광객이 몰리는 최성수기라서 호텔 요금이 30-50% 정도 비싸집니다. 최소 2-3개월 전에 미리 예약하는 것이 좋다는 평가가 나와요(31).\n\n**Q5: 12월 두바이에서 즐길 수 있는 특별한 이벤트가 있나요?**\nA5: 네, 12월에는 UAE 국경일(12월 2일), 대규모 세일 행사인 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 화려한 신년 불꽃축제 등 다양한 축제와 이벤트가 열리곤 하지요(33).\n\n**사용된 출처 목록**\n* [1] [https://www.climatestotravel.com/climate/united-arab-emirates/dubai](https://www.climatestotravel.com/climate/united-arab-emirates/dubai)\n* [2] [https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/](https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/)\n* [3] [https://www.weather2travel.com/uae/dubai/december/](https://www.weather2travel.com/uae/dubai/december/)\n* [7] [https://en.wikipedia.org/wiki/Climate_of_Dubai](https://en.wikipedia.org/wiki/Climate_of_Dubai)\n* [13] [https://en.climate-data.org/asia/united-arab-em\n\n<img src=\"https://pittcher.com/image/15ecdbac-5cfd-440d-92ce-000afeb7dd55.png\" alt=\"image\" width=\"512\">"
+        },
+        "binary": {},
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "video_url": [
+      {
+        "json": {
+          "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+          "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+          "status": "completed",
+          "timestamp": "2026-02-28 02:58"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Google Sheets": [
+      {
+        "json": {
+          "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+          "source_file": "## 두바이 12월 날씨 정보\n\n<img src=\"https://pittcher.com/image/0e441c05-753d-47e9-92df-538d273d1d41.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 기온은 어떠한가요?\n\n두바이는 아열대 사막 기후에 속하므로, 우리가 생각하는 겨울과는 전혀 다른 아주 온화한 날씨를 보입니다(1). 낮 최고 기온은 평균 26-27°C 정도로, 반소매 옷을 입고 다니기에 딱 좋은 따뜻한 날씨가 지속돼요. 다만 밤에는 기온이 15-18°C까지 뚝 떨어지므로, 일교차가 비교적 큰 편이라는 점을 꼭 기억해야 합니다(1). **월평균 기온은 약 21.4°C를 기록하며, 최고 기온은 26°C, 최저 기온은 15°C로 측정되었습니다(2).** 흥미롭게도, 12월 초에는 평균 최고 기온이 27.6°C였다가 월말로 갈수록 25.2°C로 서서히 내려가는 경향이 관찰되곤 합니다(2).\n\n12월의 아랍에미리트 기후는 야외 활동과 관광에 이상적인 날씨 조건을 제공한다고 분석되며, 12월을 두바이 여행의 최적기로 평가하고 있어요(1). 습도는 46-56%로 연중 최고 수준에 달하지만, 한국의 여름철 습도에 비하면 훨씬 쾌적합니다. 해수 온도 역시 평균 25°C를 유지하여, 라 메르(La Mer) 해변에서 수영을 즐겨도 전혀 춥지 않고 오히려 상쾌함을 느꼈던 기억이 납니다(2).\n\n> 최근 기후 변화로 겨울철 기온이 점차 오르는 추세임을 부정할 수는 없겠으나, 여전히 12월은 두바이를 방문하기 가장 좋은 시기임이 틀림없습니다(1).\n\n*주의: 이 시기는 전 세계 관광객들이 몰려드는 성수기인 만큼 호텔 요금이 여름보다 30% 이상 치솟는 경향이 있습니다. 최소 2-3개월 전에는 예약을 마치는 것이 현명한 선택입니다(31).*\n\n<img src=\"https://pittcher.com/image/22699bdb-1a06-4d75-9739-a2bbd31899ba.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 강수량은 얼마나 되나요?\n\n두바이는 사막 기후 지역이라 비 걱정은 거의 하지 않아도 무방합니다. 12월 평균 강수량은 15mm에 불과한데, 이는 연간 총 강수량 95mm의 약 16%에 그치는 수준입니다(7). 기상 관측 데이터를 살펴보면, 12월 한 달 중 비가 오는 날은 평균 이틀 정도에 불과합니다. **비가 내리더라도 대부분 짧고 강하게 쏟아지는 소나기 형태라 여행에 큰 지장을 주지 않는다는 특징이 있습니다(7).**\n\n월 중 가장 많은 비가 쏟아진 날은 12월 17일로 5.56mm를 기록했으며, 가장 건조했던 날은 12월 19일로 0.09mm에 불과했던 것으로 조사되었습니다(13). 기상청 전문가들의 설명에 의하면, 아랍에미리트의 비는 주로 11월부터 3월 사이의 겨울에 집중되지만, 사막 기후 특성상 비가 매우 드물게 내린다고 합니다(7).\n\n| 월별 평균 강수량 (mm) | 10월 | 11월 | 12월 | 1월 | 2월 |\n|---|---|---|---|---|---|\n| 강수량 | 1.2 | 6.8 | 15 | 10.9 | 24 |\n\n12월 강수량이 연중 세 번째로 많다고는 하지만, 절대적인 양 자체가 워낙 적기 때문에 관광 활동에 미치는 영향은 거의 없다고 보아도 무방합니다(1). 혹시 모를 상황에 대비하여 가벼운 접이식 우산 하나 정도 챙기는 것도 나쁘지 않은 선택일 듯합니다.\n\n<img src=\"https://pittcher.com/image/2f135068-ba1d-4d81-a37a-edfceb245ad2.png\" alt=\"image\" width=\"512\">\n\n## 두바이 12월 여행 준비\n\n\n\n### 두바이 12월 옷차림, 어떻게 준비해야 할까요?\n\n12월 두바이 여행 옷차림의 핵심은 다름 아닌 '레이어링', 즉 겹쳐 입기입니다. 낮과 밤의 큰 일교차를 반드시 고려해야 합니다(21). 낮에는 가벼운 여름옷, 이를테면 반소매 티셔츠나 원피스가 적합하지만, 해가 지면 금방 선선해지므로 가벼운 겉옷을 꼭 준비해야 해요(21). 특히 두바이는 이슬람 문화권에 속하므로, 쇼핑몰이나 공공장소에 방문할 때는 현지 문화 존중 차원에서 어깨와 무릎을 덮는 보수적인 복장을 입는 것이 바람직합니다. 개인적으로는 얇은 긴소매 셔츠나 롱스커트가 아주 유용했던 기억이 있습니다(21).\n\n낮 기온 25°C, 밤 기온 11°C 정도의 일교차를 생각하면 긴팔 상의, 가벼운 재킷, 카디건 등은 필수 준비물일 게 분명해 보입니다(24). 소재는 땀 흡수가 잘 되면서 바람이 잘 통하는 면, 린넨, 대나무 혼방 같은 천연 소재 옷이 사막 기후에 가장 적합합니다. 반대로 폴리에스테르 같은 합성 소재는 피하는 것이 좋습니다(24).\n\n두바이에서 사막 사파리를 계획하고 있다면 다음과 같은 옷차림을 추천합니다.\n\n*   긴 바지\n*   어깨를 덮는 상의\n*   저녁 추위에 대비한 가벼운 재킷\n\n덧붙여 두바이 몰(The Dubai Mall) 같은 실내 공간은 에어컨이 매우 강하니, 파시미나나 얇은 카디건을 항상 가방에 넣어 다니는 것이 현명한 선택일 겁니다(28).\n\n<img src=\"https://pittcher.com/image/228930ff-2525-4a82-8f11-437495d40ef2.png\" alt=\"image\" width=\"512\">\n\n### 완벽한 두바이 12월 여행을 위한 팁\n\n12월은 두바이 여행의 최적기입니다! 15-26°C를 오가는 쾌적한 기온과 거의 비가 내리지 않는 날씨 덕분에 야외 활동을 마음껏 즐길 수 있는 최고의 시기이거든요(31). 두바이 관광청 데이터에 따르면 12월부터 2월까지가 호텔 점유율이 가장 높은 성수기입니다. 따라서 항공권과 숙소는 최대한 서둘러 예약하는 것이 중요합니다(39). 게다가 12월에는 UAE 국경일(12월 2일) 연휴, 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 세계적인 신년 불꽃축제 등 다채로운 행사가 가득 펼쳐져 도시 전체가 축제 분위기에 휩싸입니다(33).\n\n성수기이다 보니 호텔 요금은 평소보다 30-50%까지 치솟습니다. 제 경험상 최소 3개월 전에는 예약을 마치는 것이 바람직하더라고요(31). 세계에서 가장 높은 건물인 부르즈 칼리파 같은 인기 명소 역시 현장에서 표를 구하기 어려울 수도 있습니다. 그러니 반드시 온라인으로 사전 예약을 마쳐야 합니다(31). 여행 전문가들은 사막 사파리, 마리나 워크 산책, 주메이라 해변에서의 휴양 등 야외 활동을 12월에 만끽하라고 적극적으로 권합니다. **특히 해질녘 사막의 황홀한 풍경을 감상할 수 있는 저녁 사막 투어는 정말 환상적이니, 꼭 경험해 보시길 추천합니다(31).**\n\n12월의 바닷물 온도는 25°C를 유지하여 수영과 수상 스포츠를 즐기기에도 완벽하며, 하루 평균 8-9시간의 풍부한 일조량 덕분에 낮 동안 알차게 활동할 수 있습니다(3). 만약 신년 불꽃축제를 제대로 관람하고 싶다면, 오후 5-6시 전에는 다운타운에 도착해야 함을 명심해야 합니다. 오후 8시 이후에는 도로가 통제되어 극심한 교통 혼잡이 발생하는 경우가 많습니다(33).\n\n결론적으로, 12월의 두바이 여행은 온화한 날씨와 풍성한 축제 덕분에 잊지 못할 경험을 선사할 것이 틀림없어요(31). 하지만 성수기라는 점을 감안하여 숙소와 주요 명소는 미리 예약하고, 큰 일교차에 대비한 옷차림을 꼼꼼히 준비하는 것이 성공적인 여행의 열쇠라는 점을 기억하시지요(31, 21). 철저한 준비를 통해 두바이의 무한한 매력을 온전히 느껴보시길 바랍니다(1).\n\n<img src=\"https://pittcher.com/image/d0de61d9-5520-4495-9ca8-532e6cbda438.png\" alt=\"image\" width=\"512\">\n\n## FAQ\n\n**Q1: 두바이 12월의 평균 기온은 어느 정도인가요?**\nA1: 두바이 12월의 평균 기온은 21.4°C에 달하며, 낮 최고 기온은 26°C, 밤 최저 기온은 15°C 정도로 측정됩니다(2). 낮에는 따뜻하고 밤에는 선선하더라고요.\n\n**Q2: 12월에 두바이에서 비가 자주 오나요?**\nA2: 아니요, 12월은 평균 강수량이 15mm로 매우 적은 편입니다. 비 오는 날도 평균 이틀 정도에 불과하여 여행 중 비를 만날 확률은 낮다고 보아도 무방해요(7).\n\n**Q3: 12월 두바이 여행 시 어떤 옷차림이 가장 적절한가요?**\nA3: 낮에는 반소매 같은 가벼운 여름옷이 적합합니다. 밤에는 기온이 내려가므로 가벼운 재킷이나 긴팔 상의를 겹쳐 입는 것이 좋아요(21). 쇼핑몰 등 공공장소 방문 시에는 어깨와 무릎을 덮는 옷을 준비하는 것을 추천합니다(21).\n\n**Q4: 12월에 두바이 호텔은 미리 예약해야 하나요?**\nA4: 네, 12월은 전 세계 관광객이 몰리는 최성수기라서 호텔 요금이 30-50% 정도 비싸집니다. 최소 2-3개월 전에 미리 예약하는 것이 좋다는 평가가 나와요(31).\n\n**Q5: 12월 두바이에서 즐길 수 있는 특별한 이벤트가 있나요?**\nA5: 네, 12월에는 UAE 국경일(12월 2일), 대규모 세일 행사인 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 화려한 신년 불꽃축제 등 다양한 축제와 이벤트가 열리곤 하지요(33).\n\n**사용된 출처 목록**\n* [1] [https://www.climatestotravel.com/climate/united-arab-emirates/dubai](https://www.climatestotravel.com/climate/united-arab-emirates/dubai)\n* [2] [https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/](https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/)\n* [3] [https://www.weather2travel.com/uae/dubai/december/](https://www.weather2travel.com/uae/dubai/december/)\n* [7] [https://en.wikipedia.org/wiki/Climate_of_Dubai](https://en.wikipedia.org/wiki/Climate_of_Dubai)\n* [13] [https://en.climate-data.org/asia/united-arab-em\n\n<img src=\"https://pittcher.com/image/15ecdbac-5cfd-440d-92ce-000afeb7dd55.png\" alt=\"image\" width=\"512\">",
+          "timestamp": "2026-02-28 02:58",
+          "status": "completed",
+          "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "get_row": [
+      {
+        "json": {
+          "row_number": 3,
+          "video_id": "267fcfc74c994d9c893864ed5d3043a1",
+          "source_file": "## 두바이 12월 날씨 정보\n\n<img src=\"https://pittcher.com/image/0e441c05-753d-47e9-92df-538d273d1d41.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 기온은 어떠한가요?\n\n두바이는 아열대 사막 기후에 속하므로, 우리가 생각하는 겨울과는 전혀 다른 아주 온화한 날씨를 보입니다(1). 낮 최고 기온은 평균 26-27°C 정도로, 반소매 옷을 입고 다니기에 딱 좋은 따뜻한 날씨가 지속돼요. 다만 밤에는 기온이 15-18°C까지 뚝 떨어지므로, 일교차가 비교적 큰 편이라는 점을 꼭 기억해야 합니다(1). **월평균 기온은 약 21.4°C를 기록하며, 최고 기온은 26°C, 최저 기온은 15°C로 측정되었습니다(2).** 흥미롭게도, 12월 초에는 평균 최고 기온이 27.6°C였다가 월말로 갈수록 25.2°C로 서서히 내려가는 경향이 관찰되곤 합니다(2).\n\n12월의 아랍에미리트 기후는 야외 활동과 관광에 이상적인 날씨 조건을 제공한다고 분석되며, 12월을 두바이 여행의 최적기로 평가하고 있어요(1). 습도는 46-56%로 연중 최고 수준에 달하지만, 한국의 여름철 습도에 비하면 훨씬 쾌적합니다. 해수 온도 역시 평균 25°C를 유지하여, 라 메르(La Mer) 해변에서 수영을 즐겨도 전혀 춥지 않고 오히려 상쾌함을 느꼈던 기억이 납니다(2).\n\n> 최근 기후 변화로 겨울철 기온이 점차 오르는 추세임을 부정할 수는 없겠으나, 여전히 12월은 두바이를 방문하기 가장 좋은 시기임이 틀림없습니다(1).\n\n*주의: 이 시기는 전 세계 관광객들이 몰려드는 성수기인 만큼 호텔 요금이 여름보다 30% 이상 치솟는 경향이 있습니다. 최소 2-3개월 전에는 예약을 마치는 것이 현명한 선택입니다(31).*\n\n<img src=\"https://pittcher.com/image/22699bdb-1a06-4d75-9739-a2bbd31899ba.png\" alt=\"image\" width=\"512\">\n\n### 두바이 12월 강수량은 얼마나 되나요?\n\n두바이는 사막 기후 지역이라 비 걱정은 거의 하지 않아도 무방합니다. 12월 평균 강수량은 15mm에 불과한데, 이는 연간 총 강수량 95mm의 약 16%에 그치는 수준입니다(7). 기상 관측 데이터를 살펴보면, 12월 한 달 중 비가 오는 날은 평균 이틀 정도에 불과합니다. **비가 내리더라도 대부분 짧고 강하게 쏟아지는 소나기 형태라 여행에 큰 지장을 주지 않는다는 특징이 있습니다(7).**\n\n월 중 가장 많은 비가 쏟아진 날은 12월 17일로 5.56mm를 기록했으며, 가장 건조했던 날은 12월 19일로 0.09mm에 불과했던 것으로 조사되었습니다(13). 기상청 전문가들의 설명에 의하면, 아랍에미리트의 비는 주로 11월부터 3월 사이의 겨울에 집중되지만, 사막 기후 특성상 비가 매우 드물게 내린다고 합니다(7).\n\n| 월별 평균 강수량 (mm) | 10월 | 11월 | 12월 | 1월 | 2월 |\n|---|---|---|---|---|---|\n| 강수량 | 1.2 | 6.8 | 15 | 10.9 | 24 |\n\n12월 강수량이 연중 세 번째로 많다고는 하지만, 절대적인 양 자체가 워낙 적기 때문에 관광 활동에 미치는 영향은 거의 없다고 보아도 무방합니다(1). 혹시 모를 상황에 대비하여 가벼운 접이식 우산 하나 정도 챙기는 것도 나쁘지 않은 선택일 듯합니다.\n\n<img src=\"https://pittcher.com/image/2f135068-ba1d-4d81-a37a-edfceb245ad2.png\" alt=\"image\" width=\"512\">\n\n## 두바이 12월 여행 준비\n\n\n\n### 두바이 12월 옷차림, 어떻게 준비해야 할까요?\n\n12월 두바이 여행 옷차림의 핵심은 다름 아닌 '레이어링', 즉 겹쳐 입기입니다. 낮과 밤의 큰 일교차를 반드시 고려해야 합니다(21). 낮에는 가벼운 여름옷, 이를테면 반소매 티셔츠나 원피스가 적합하지만, 해가 지면 금방 선선해지므로 가벼운 겉옷을 꼭 준비해야 해요(21). 특히 두바이는 이슬람 문화권에 속하므로, 쇼핑몰이나 공공장소에 방문할 때는 현지 문화 존중 차원에서 어깨와 무릎을 덮는 보수적인 복장을 입는 것이 바람직합니다. 개인적으로는 얇은 긴소매 셔츠나 롱스커트가 아주 유용했던 기억이 있습니다(21).\n\n낮 기온 25°C, 밤 기온 11°C 정도의 일교차를 생각하면 긴팔 상의, 가벼운 재킷, 카디건 등은 필수 준비물일 게 분명해 보입니다(24). 소재는 땀 흡수가 잘 되면서 바람이 잘 통하는 면, 린넨, 대나무 혼방 같은 천연 소재 옷이 사막 기후에 가장 적합합니다. 반대로 폴리에스테르 같은 합성 소재는 피하는 것이 좋습니다(24).\n\n두바이에서 사막 사파리를 계획하고 있다면 다음과 같은 옷차림을 추천합니다.\n\n*   긴 바지\n*   어깨를 덮는 상의\n*   저녁 추위에 대비한 가벼운 재킷\n\n덧붙여 두바이 몰(The Dubai Mall) 같은 실내 공간은 에어컨이 매우 강하니, 파시미나나 얇은 카디건을 항상 가방에 넣어 다니는 것이 현명한 선택일 겁니다(28).\n\n<img src=\"https://pittcher.com/image/228930ff-2525-4a82-8f11-437495d40ef2.png\" alt=\"image\" width=\"512\">\n\n### 완벽한 두바이 12월 여행을 위한 팁\n\n12월은 두바이 여행의 최적기입니다! 15-26°C를 오가는 쾌적한 기온과 거의 비가 내리지 않는 날씨 덕분에 야외 활동을 마음껏 즐길 수 있는 최고의 시기이거든요(31). 두바이 관광청 데이터에 따르면 12월부터 2월까지가 호텔 점유율이 가장 높은 성수기입니다. 따라서 항공권과 숙소는 최대한 서둘러 예약하는 것이 중요합니다(39). 게다가 12월에는 UAE 국경일(12월 2일) 연휴, 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 세계적인 신년 불꽃축제 등 다채로운 행사가 가득 펼쳐져 도시 전체가 축제 분위기에 휩싸입니다(33).\n\n성수기이다 보니 호텔 요금은 평소보다 30-50%까지 치솟습니다. 제 경험상 최소 3개월 전에는 예약을 마치는 것이 바람직하더라고요(31). 세계에서 가장 높은 건물인 부르즈 칼리파 같은 인기 명소 역시 현장에서 표를 구하기 어려울 수도 있습니다. 그러니 반드시 온라인으로 사전 예약을 마쳐야 합니다(31). 여행 전문가들은 사막 사파리, 마리나 워크 산책, 주메이라 해변에서의 휴양 등 야외 활동을 12월에 만끽하라고 적극적으로 권합니다. **특히 해질녘 사막의 황홀한 풍경을 감상할 수 있는 저녁 사막 투어는 정말 환상적이니, 꼭 경험해 보시길 추천합니다(31).**\n\n12월의 바닷물 온도는 25°C를 유지하여 수영과 수상 스포츠를 즐기기에도 완벽하며, 하루 평균 8-9시간의 풍부한 일조량 덕분에 낮 동안 알차게 활동할 수 있습니다(3). 만약 신년 불꽃축제를 제대로 관람하고 싶다면, 오후 5-6시 전에는 다운타운에 도착해야 함을 명심해야 합니다. 오후 8시 이후에는 도로가 통제되어 극심한 교통 혼잡이 발생하는 경우가 많습니다(33).\n\n결론적으로, 12월의 두바이 여행은 온화한 날씨와 풍성한 축제 덕분에 잊지 못할 경험을 선사할 것이 틀림없어요(31). 하지만 성수기라는 점을 감안하여 숙소와 주요 명소는 미리 예약하고, 큰 일교차에 대비한 옷차림을 꼼꼼히 준비하는 것이 성공적인 여행의 열쇠라는 점을 기억하시지요(31, 21). 철저한 준비를 통해 두바이의 무한한 매력을 온전히 느껴보시길 바랍니다(1).\n\n<img src=\"https://pittcher.com/image/d0de61d9-5520-4495-9ca8-532e6cbda438.png\" alt=\"image\" width=\"512\">\n\n## FAQ\n\n**Q1: 두바이 12월의 평균 기온은 어느 정도인가요?**\nA1: 두바이 12월의 평균 기온은 21.4°C에 달하며, 낮 최고 기온은 26°C, 밤 최저 기온은 15°C 정도로 측정됩니다(2). 낮에는 따뜻하고 밤에는 선선하더라고요.\n\n**Q2: 12월에 두바이에서 비가 자주 오나요?**\nA2: 아니요, 12월은 평균 강수량이 15mm로 매우 적은 편입니다. 비 오는 날도 평균 이틀 정도에 불과하여 여행 중 비를 만날 확률은 낮다고 보아도 무방해요(7).\n\n**Q3: 12월 두바이 여행 시 어떤 옷차림이 가장 적절한가요?**\nA3: 낮에는 반소매 같은 가벼운 여름옷이 적합합니다. 밤에는 기온이 내려가므로 가벼운 재킷이나 긴팔 상의를 겹쳐 입는 것이 좋아요(21). 쇼핑몰 등 공공장소 방문 시에는 어깨와 무릎을 덮는 옷을 준비하는 것을 추천합니다(21).\n\n**Q4: 12월에 두바이 호텔은 미리 예약해야 하나요?**\nA4: 네, 12월은 전 세계 관광객이 몰리는 최성수기라서 호텔 요금이 30-50% 정도 비싸집니다. 최소 2-3개월 전에 미리 예약하는 것이 좋다는 평가가 나와요(31).\n\n**Q5: 12월 두바이에서 즐길 수 있는 특별한 이벤트가 있나요?**\nA5: 네, 12월에는 UAE 국경일(12월 2일), 대규모 세일 행사인 두바이 쇼핑 페스티벌(12월 5일 시작), 그리고 화려한 신년 불꽃축제 등 다양한 축제와 이벤트가 열리곤 하지요(33).\n\n**사용된 출처 목록**\n* [1] [https://www.climatestotravel.com/climate/united-arab-emirates/dubai](https://www.climatestotravel.com/climate/united-arab-emirates/dubai)\n* [2] [https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/](https://en.climate-data.org/asia/united-arab-emirates/dubai/dubai-705/t/december-12/)\n* [3] [https://www.weather2travel.com/uae/dubai/december/](https://www.weather2travel.com/uae/dubai/december/)\n* [7] [https://en.wikipedia.org/wiki/Climate_of_Dubai](https://en.wikipedia.org/wiki/Climate_of_Dubai)\n* [13] [https://en.climate-data.org/asia/united-arab-em\n\n<img src=\"https://pittcher.com/image/15ecdbac-5cfd-440d-92ce-000afeb7dd55.png\" alt=\"image\" width=\"512\">",
+          "timestamp": "2026-02-28 02:58",
+          "status": "completed",
+          "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+          "youtube- video_id": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "fire_webhook": [
+      {
+        "json": {
+          "message": "Workflow was started"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "video_status": [
+      {
+        "json": {
+          "code": 100,
+          "data": {
+            "callback_id": null,
+            "caption_url": "https://resource2.heygen.ai/heygen/subtitles/267fcfc74c994d9c893864ed5d3043a1-c3eb4df0290e4d178ada9827251f9711.ass",
+            "created_at": 1772187094,
+            "duration": 44.0527,
+            "error": null,
+            "gif_url": "https://resource2.heygen.ai/video/267fcfc74c994d9c893864ed5d3043a1/vc3eb4df0290e4d178ada9827251f9711/gif.gif",
+            "id": "267fcfc74c994d9c893864ed5d3043a1",
+            "status": "completed",
+            "thumbnail_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.jpeg?Expires=1772870293&Signature=cfE29P6tuTQgNU4xF9l2kf8tzUspvGcjiMSEC3kv-xWfBeT~1RtoW6g-ItHPIpyhwnrrMRFBFZ0o6tQnuTAoGOwkv35F7bJs7eL04TgJQ3onQhEmqy~2ioREc5hM1SyMpmI~-3Fn6QlhZG~or~y5z7W6qxMdxHfRj3b5uDQ8aZjwLe6G-4o4GtPT87eGeTkQP~GEg5hQecqqau5GTasQBGHCqB9CS-OK3FeZq8BrOfjae0s~MhlwiOaRsk~tar8x1L-9AHCqVyQk7njjoTrlNeHlYNBab-~MbUBRZiCErfGvZWSAnrJSfz5oaqIFlFa84LP7D0gaIj0v5dqmYfSSkg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/267fcfc74c994d9c893864ed5d3043a1.mp4?Expires=1772792125&Signature=I1u~68SIqCmsQug8nT3TVlate2a3IlVa1-7AUxjFwgPvamxN4XD3TmH4MF9fjL-CXsWi4Am5ZYneXG5rOrfuSBNbjAy9T~DYumEbDSyWB6yjm5mQ1XstHgIXmvhZ1BPd1jl~GkCmvP6g6Jbkj1aJ2zf5ReqOa15Q4JY5SGNxpeK1WI4EwEi7MVE6VbmOnjzSZ10od1QwHubtbN9lyqRvTPWSaQM-1I-S1gjGqIOXvRbZEKCT~vozN4sxFZtpS6RAkczo9ANB4mu0qf7Hy9PX9r2tv1lRQl~cyXPxHWw~LqqtUlrT2lzkg6kgpdzfb5HCI5zxY0ZQlaDle~Sfk5kjvg__&Key-Pair-Id=K38HBHX5LX3X2H",
+            "video_url_caption": "https://resource2.heygen.ai/aws_pacific/avatar_tmp/198f6b4ea87f4a0fa545494c6f2adff2/vc3eb4df0290e4d178ada9827251f9711/caption_267fcfc74c994d9c893864ed5d3043a1.mp4"
+          },
+          "message": "Success"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "video_agent": {
+      "main": [
+        [
+          {
+            "node": "video_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "video_scriptAI": {
+      "main": [
+        [
+          {
+            "node": "clean_output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "video_scriptAI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "video_status": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "5 mins",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "video_url",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5 mins",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5 mins",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5 mins",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "video_url",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean_output": {
+      "main": [
+        [
+          {
+            "node": "video_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "article_text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "article_text": {
+      "main": [
+        [
+          {
+            "node": "video_scriptAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "video_url": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "get_row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_row": {
+      "main": [
+        [
+          {
+            "node": "fire_webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 mins": {
+      "main": [
+        [
+          {
+            "node": "video_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1d477ad2-43aa-42a2-9612-13ae5db0c02e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4bb1dc8a8f068b1e27771c6dbb7c97308b280bd40e443a6f5615cb57218bc5fe"
+  },
+  "id": "srrBFw6oj82GSQAMtz9y7",
+  "tags": []
+}
